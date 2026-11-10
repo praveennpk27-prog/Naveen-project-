@@ -1,0 +1,3562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#00897b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Anaesthesiologist Logbook</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{--pri:#00897b;--pri-dk:#00695c;--pri-lt:#e0f2f1;--bg:#f8fafc;--txt:#0f172a;--muted:#64748b;--bdr:#cbd5e1;}
+    *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent;}
+    body{background:var(--bg);color:var(--txt);padding-bottom:calc(82px + env(safe-area-inset-bottom, 0px));-webkit-font-smoothing:antialiased;}
+    
+    /* Header */
+    header{background:var(--pri);color:#fff;padding:10px 14px;position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;gap:8px;box-shadow:0 2px 6px rgba(0,0,0,0.12);}
+    header h1{font-size:1.02rem;font-weight:700;display:flex;align-items:center;gap:7px;line-height:1.2;}
+    .hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+    .hdr-doc{font-size:0.75rem;font-weight:700;color:#ffffff;text-align:right;cursor:pointer;max-width:210px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .hdr-pills{display:flex;align-items:center;gap:5px;}
+    .drv-pill{font-size:0.65rem;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.2);color:#fff;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;border:none;}
+    .admin-pill{font-size:0.65rem;padding:2px 8px;border-radius:10px;background:#fef08a;color:#854d0e;font-weight:800;cursor:pointer;display:none;align-items:center;gap:4px;border:none;}
+    .logout-pill{font-size:0.65rem;padding:2px 8px;border-radius:10px;background:rgba(239,68,68,0.9);color:#fff;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:none;}
+
+    .container{max-width:760px;margin:0 auto;padding:10px;}
+    .card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;border:1px solid var(--bdr);box-shadow:0 1px 3px rgba(0,0,0,0.03);}
+    .fg{margin-bottom:14px;}
+    .lbl-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:6px;flex-wrap:wrap;}
+    
+    /* Section Headings */
+    label{
+      display:inline-block;font-size:0.82rem;font-weight:800;color:#1e293b;
+      margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em;
+      border-left:3px solid var(--pri);padding-left:6px;line-height:1.15;
+    }
+    
+    input[type="text"],input[type="number"],input[type="date"],input[type="url"],input[type="search"],input[type="tel"],input[type="password"],input[type="email"],select{
+      width:100%;padding:9px 11px;border:1px solid var(--bdr);border-radius:8px;font-size:0.92rem;background:#fff;color:var(--txt);transition:border-color 0.15s,box-shadow 0.15s;
+    }
+    input:focus,select:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 2.5px rgba(0,137,123,0.16);}
+    .row{display:flex;gap:8px;}.col{flex:1;min-width:0;}
+    
+    /* Micro Pills */
+    .pill-group{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px;}
+    .pill-lbl{display:inline-block;cursor:pointer;user-select:none;}.pill-lbl input{display:none;}
+    .pill-sp{
+      display:inline-flex;align-items:center;padding:2.5px 7.5px;border-radius:10px;
+      font-size:0.65rem;font-weight:600;line-height:1.2;
+      background:#f8fafc;color:#475569;border:1px solid #cbd5e1;transition:all 0.1s ease;
+    }
+    .pill-lbl input[type="radio"]:checked+.pill-sp{background:#00897b!important;color:#fff!important;border-color:#004d40!important;}
+    .pill-lbl.comorbid input:checked+.pill-sp{background:#0284c7!important;color:#fff!important;border-color:#0369a1!important;}
+    .pill-lbl.analgesia input:checked+.pill-sp{background:#059669!important;color:#fff!important;border-color:#047857!important;}
+    .pill-lbl.comp input:checked+.pill-sp{background:#ef4444!important;color:#fff!important;border-color:#b91c1c!important;}
+    .pill-lbl.pain input:checked+.pill-sp{background:#8b5cf6!important;color:#fff!important;border-color:#6d28d9!important;}
+    .pill-lbl.postop input:checked+.pill-sp{background:#0d9488!important;color:#fff!important;border-color:#0f766e!important;}
+    .pill-lbl.comp input[value="Nil"]:checked+.pill-sp,.pill-lbl.comorbid input[value="Nil"]:checked+.pill-sp{background:#10b981!important;color:#fff!important;border-color:#047857!important;}
+    
+    .cond-box{background:#f0fdfa;border:1.5px solid #99f6e4;border-radius:10px;padding:11px;margin-bottom:13px;display:none;}
+    
+    /* Bottom Navigation (4 Tabs) */
+    nav.b-nav{
+      position:fixed;bottom:0;left:0;right:0;
+      height:calc(60px + env(safe-area-inset-bottom, 0px));
+      padding-bottom:env(safe-area-inset-bottom, 0px);
+      background:#fff;border-top:1px solid var(--bdr);display:flex;z-index:999;
+      box-shadow:0 -2px 8px rgba(0,0,0,0.05);
+    }
+    .nav-btn{background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;font-size:0.68rem;gap:3px;cursor:pointer;flex:1;justify-content:center;font-weight:600;}
+    .nav-btn i{font-size:1.05rem;}
+    .nav-btn.active{color:var(--pri)!important;font-weight:700;}
+    
+    .btn{width:100%;padding:11px;border-radius:8px;font-size:0.93rem;font-weight:700;border:none;cursor:pointer;background:var(--pri);color:#fff;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:background 0.15s,transform 0.1s;}
+    .btn:active{transform:scale(0.99);background:var(--pri-dk);}
+    .btn:disabled{opacity:0.6;cursor:not-allowed;}
+    .btn-sec{background:#e2e8f0;color:var(--txt);}
+    .mini-btn{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;padding:2px 7px;border-radius:5px;font-size:0.68rem;font-weight:700;cursor:pointer;}
+    
+    .case-item{background:#fff;border:1px solid var(--bdr);border-radius:10px;padding:12px;margin-bottom:10px;}
+    .d-box{background:#f8fafc;border-radius:6px;padding:8px 10px;margin:7px 0;font-size:0.81rem;line-height:1.45;border-left:3px solid var(--pri);}
+    .act-btn{display:inline-flex;align-items:center;gap:5px;font-size:0.75rem;padding:6px 10px;border-radius:6px;text-decoration:none;font-weight:600;border:none;cursor:pointer;margin:5px 5px 0 0;}
+    .thumb-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0;}
+    .thumb-img{width:58px;height:58px;object-fit:cover;border-radius:6px;border:2px solid var(--pri);cursor:pointer;}
+    
+    /* Visual Analytics UI */
+    .stat-grid-4{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+    @media(min-width:500px){.stat-grid-4{grid-template-columns:repeat(4,1fr);}}
+    .stat-box{background:#fff;border:1px solid var(--bdr);border-radius:8px;padding:10px 8px;text-align:center;box-shadow:0 1px 2px rgba(0,0,0,0.02);}
+    .stat-num{font-size:1.3rem;font-weight:800;color:var(--txt);}
+    .stat-lbl{font-size:0.66rem;color:var(--muted);font-weight:700;text-transform:uppercase;margin-top:2px;}
+    
+    .chart-container{display:flex;align-items:center;justify-content:space-around;gap:12px;flex-wrap:wrap;padding:8px 0;}
+    .donut-wrap{position:relative;width:130px;height:130px;display:flex;align-items:center;justify-content:center;}
+    .donut-center{position:absolute;text-align:center;pointer-events:none;}
+    .donut-center .dc-num{font-size:1.15rem;font-weight:800;color:var(--txt);line-height:1;}
+    .donut-center .dc-lbl{font-size:0.62rem;color:var(--muted);font-weight:700;text-transform:uppercase;}
+    .legend-box{display:flex;flex-direction:column;gap:5px;min-width:130px;}
+    .legend-item{display:flex;align-items:center;gap:6px;font-size:0.75rem;font-weight:600;color:#334155;}
+    .legend-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0;}
+
+    .bar-row{margin-bottom:8px;font-size:0.78rem;}
+    .bar-lbl{display:flex;justify-content:space-between;margin-bottom:3px;font-weight:600;color:#334155;}
+    .bar-track{height:7px;background:#e2e8f0;border-radius:4px;overflow:hidden;}
+    .bar-fill{height:100%;background:var(--pri);border-radius:4px;transition:width 0.3s ease;}
+
+    .diag-box{padding:11px;border-radius:8px;font-size:0.82rem;line-height:1.45;background:#f8fafc;border:1px solid var(--bdr);margin-top:10px;display:none;}
+    .badge-ok{background:#dcfce7;color:#15803d;border:1px solid #86efac;padding:2px 7px;border-radius:6px;font-size:0.7rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;}
+    .badge-warn{background:#fef3c7;color:#b45309;border:1px solid #fde68a;padding:2px 7px;border-radius:6px;font-size:0.7rem;font-weight:700;display:inline-flex;align-items:center;gap:4px;cursor:pointer;}
+    
+    #modalOverlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:14px;}
+    #modalOverlay img{max-width:100%;max-height:80vh;border-radius:8px;object-fit:contain;}
+
+    /* ==========================================================================
+       DOCTOR AUTHENTICATION OVERLAY (SIGN IN & SIGN UP)
+       ========================================================================== */
+    #authOverlay{
+      position:fixed;inset:0;z-index:10000;
+      background:linear-gradient(145deg,#004d40 0%,#00796b 45%,#0f172a 100%);
+      display:flex;align-items:center;justify-content:center;
+      padding:16px;overflow-y:auto;
+    }
+    .auth-wrap{
+      width:100%;max-width:410px;background:#ffffff;border-radius:18px;
+      box-shadow:0 20px 45px rgba(0,0,0,0.35);overflow:hidden;
+      border:1px solid rgba(255,255,255,0.18);margin:auto;
+    }
+    .auth-hero{
+      background:linear-gradient(135deg,#00897b,#00695c);
+      color:#fff;padding:22px 20px 18px;text-align:center;
+    }
+    .auth-logo{
+      width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,0.18);
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:1.55rem;margin-bottom:10px;box-shadow:0 4px 12px rgba(0,0,0,0.15);
+    }
+    .auth-hero h2{font-size:1.22rem;font-weight:800;letter-spacing:-0.01em;}
+    .auth-hero p{font-size:0.78rem;opacity:0.9;margin-top:4px;}
+    .auth-tabs{
+      display:flex;background:#f1f5f9;padding:5px;margin:16px 18px 0;border-radius:10px;
+      border:1px solid #e2e8f0;
+    }
+    .auth-tab-btn{
+      flex:1;padding:9px 10px;border:none;background:transparent;
+      font-size:0.84rem;font-weight:700;color:#64748b;border-radius:7px;
+      cursor:pointer;transition:all 0.15s ease;display:flex;align-items:center;justify-content:center;gap:6px;
+    }
+    .auth-tab-btn.active{
+      background:#ffffff;color:var(--pri-dk);box-shadow:0 2px 6px rgba(15,23,42,0.08);
+    }
+    .auth-body{padding:18px 20px 22px;}
+    .input-icon-wrap{position:relative;display:flex;align-items:center;}
+    .input-icon-wrap i.left-ico{
+      position:absolute;left:12px;color:#64748b;font-size:0.92rem;pointer-events:none;
+    }
+    .input-icon-wrap input{
+      padding-left:36px!important;padding-right:38px!important;
+    }
+    .pass-toggle-btn{
+      position:absolute;right:8px;background:none;border:none;color:#64748b;
+      padding:6px;cursor:pointer;font-size:0.88rem;
+    }
+    .auth-msg{
+      padding:10px 12px;border-radius:8px;font-size:0.8rem;font-weight:600;
+      margin-bottom:14px;display:none;line-height:1.4;
+    }
+    .auth-msg.err{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;display:block;}
+    .auth-msg.ok{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;display:block;}
+    .auth-msg.info{background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;display:block;}
+
+    /* ==========================================================================
+       2-TIER SUBSCRIPTION PLANS UI (FREE vs PREMIUM) + 2 STORAGE OPTIONS
+       ========================================================================== */
+    .plans-grid-2{
+      display:grid;grid-template-columns:1fr;gap:12px;margin-top:10px;
+    }
+    @media(min-width:540px){
+      .plans-grid-2{grid-template-columns:repeat(2,1fr);}
+    }
+    .plan-card{
+      border:1.5px solid #cbd5e1;border-radius:12px;padding:14px;background:#fff;
+      display:flex;flex-direction:column;justify-content:space-between;position:relative;
+      transition:all 0.15s ease;
+    }
+    .plan-card.active-plan{
+      border-color:var(--pri);background:#f0fdfa;box-shadow:0 4px 12px rgba(0,137,123,0.12);
+    }
+    .plan-card.premium-card{border-top:4px solid #7c3aed;}
+    .plan-card.free-card{border-top:4px solid #64748b;}
+    .plan-name{font-size:0.95rem;font-weight:800;color:#0f172a;display:flex;align-items:center;justify-content:space-between;gap:6px;}
+    .plan-sub{font-size:0.74rem;font-weight:700;color:#64748b;margin:4px 0 10px;}
+    .plan-feats{list-style:none;font-size:0.77rem;color:#334155;line-height:1.55;margin-bottom:14px;}
+    .plan-feats li{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;}
+    .plan-feats li i{margin-top:3px;font-size:0.74rem;}
+    .plan-btn{
+      width:100%;padding:9px 12px;border-radius:8px;font-size:0.82rem;font-weight:800;
+      border:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    }
+
+    /* Premium 2 Storage Option Selector Buttons */
+    .storage-opt-grid{
+      display:grid;grid-template-columns:1fr;gap:10px;margin:10px 0 12px;
+    }
+    @media(min-width:520px){
+      .storage-opt-grid{grid-template-columns:repeat(2,1fr);}
+    }
+    .storage-opt-btn{
+      background:#f8fafc;border:2px solid #cbd5e1;border-radius:12px;padding:13px 12px;
+      text-align:left;cursor:pointer;transition:all 0.15s ease;display:flex;flex-direction:column;gap:5px;
+    }
+    .storage-opt-btn.selected-gdrive{
+      background:#f0f9ff;border-color:#0284c7;box-shadow:0 3px 10px rgba(2,132,199,0.14);
+    }
+    .storage-opt-btn.selected-ourdb{
+      background:#f5f3ff;border-color:#7c3aed;box-shadow:0 3px 10px rgba(124,58,237,0.14);
+    }
+    .storage-opt-head{
+      display:flex;align-items:center;justify-content:space-between;font-size:0.88rem;font-weight:800;color:#0f172a;
+    }
+    .storage-opt-desc{
+      font-size:0.74rem;color:#475569;line-height:1.4;
+    }
+
+    /* Google Drive Login Modal */
+    #gdriveLoginModal{
+      position:fixed;inset:0;background:rgba(15,23,42,0.7);z-index:120000;
+      display:none;align-items:center;justify-content:center;padding:16px;
+    }
+    .gdrive-login-card{
+      background:#fff;border-radius:16px;max-width:410px;width:100%;
+      padding:20px;box-shadow:0 20px 45px rgba(0,0,0,0.3);border:1px solid #cbd5e1;
+    }
+
+    /* Admin-Only Database Table */
+    .admin-table-wrap{overflow-x:auto;margin-top:8px;border:1px solid #cbd5e1;border-radius:8px;}
+    .admin-table{width:100%;border-collapse:collapse;font-size:0.76rem;text-align:left;}
+    .admin-table th{background:#0f172a;color:#fff;padding:8px 9px;font-weight:700;white-space:nowrap;}
+    .admin-table td{padding:8px 9px;border-bottom:1px solid #e2e8f0;color:#1e293b;vertical-align:middle;}
+    .admin-table tr:last-child td{border-bottom:none;}
+    .admin-table tr:nth-child(even){background:#f8fafc;}
+
+    /* Custom In-Page Dialog & Toast */
+    #toastBanner{
+      position:fixed;top:14px;left:50%;transform:translateX(-50%);
+      z-index:200000;background:#0f172a;color:#fff;padding:10px 16px;
+      border-radius:10px;font-size:0.82rem;font-weight:600;
+      box-shadow:0 8px 24px rgba(0,0,0,0.28);display:none;
+      max-width:92vw;text-align:center;border-left:4px solid #10b981;
+    }
+    #customDialogOverlay{
+      position:fixed;inset:0;background:rgba(15,23,42,0.65);z-index:150000;
+      display:none;align-items:center;justify-content:center;padding:16px;
+    }
+    .custom-dialog-card{
+      background:#fff;border-radius:14px;max-width:400px;width:100%;
+      padding:18px;box-shadow:0 16px 36px rgba(0,0,0,0.25);border:1px solid #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- IN-PAGE TOAST NOTIFICATION -->
+  <div id="toastBanner"></div>
+
+  <!-- IN-PAGE CUSTOM DIALOG MODAL -->
+  <div id="customDialogOverlay">
+    <div class="custom-dialog-card">
+      <div id="cdTitle" style="font-size:0.96rem;font-weight:800;color:#0f172a;margin-bottom:8px;display:flex;align-items:center;gap:7px">
+        <i class="fa-solid fa-circle-info" style="color:var(--pri)"></i> <span>Notification</span>
+      </div>
+      <div id="cdMessage" style="font-size:0.84rem;color:#334155;line-height:1.45;margin-bottom:12px;white-space:pre-line"></div>
+      <div id="cdInputWrap" style="display:none;margin-bottom:12px">
+        <input type="text" id="cdInput" placeholder="Enter value...">
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px">
+        <button type="button" id="cdCancelBtn" class="act-btn" style="background:#e2e8f0;color:#1e293b;padding:8px 14px;margin:0">Cancel</button>
+        <button type="button" id="cdOkBtn" class="act-btn" style="background:var(--pri);color:#fff;padding:8px 16px;margin:0">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       GOOGLE DRIVE SIGN-IN MODAL (OPENED WHEN PREMIUM USER SELECTS GDRIVE)
+       ======================================================================== -->
+  <div id="gdriveLoginModal">
+    <div class="gdrive-login-card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="width:42px;height:42px;border-radius:10px;background:#e0f2fe;color:#0284c7;display:flex;align-items:center;justify-content:center;font-size:1.3rem">
+          <i class="fa-brands fa-google-drive"></i>
+        </div>
+        <div>
+          <h3 style="font-size:1rem;font-weight:800;color:#0f172a">Sign in to Google Drive</h3>
+          <p style="font-size:0.74rem;color:#64748b">Store your logbook cases &amp; OT sheets on your own Drive</p>
+        </div>
+      </div>
+
+      <div class="fg" style="margin-bottom:10px">
+        <label for="gdEmailInput">Your Google Account Email</label>
+        <input type="email" id="gdEmailInput" placeholder="doctor.name@gmail.com">
+      </div>
+
+      <div class="fg" style="margin-bottom:12px">
+        <label for="gdModalScriptUrl">Google Drive Web App / OAuth Endpoint (Optional)</label>
+        <input type="url" id="gdModalScriptUrl" placeholder="https://script.google.com/macros/s/.../exec">
+        <div style="font-size:0.7rem;color:#64748b;margin-top:4px">
+          Sign in with your Google email above to authorize storing your cases on your personal Google Drive.
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <button type="button" class="btn btn-sec" style="flex:1" onclick="closeGdriveLoginModal()">Cancel</button>
+        <button type="button" class="btn" style="flex:1.4;background:#0284c7" onclick="confirmGdriveLogin()">
+          <i class="fa-brands fa-google"></i> Sign In &amp; Use My Drive
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       DOCTOR LOGIN & REGISTRATION OVERLAY (SIGN IN / SIGN UP)
+       ======================================================================== -->
+  <div id="authOverlay">
+    <div class="auth-wrap">
+      <div class="auth-hero">
+        <div class="auth-logo"><i class="fa-solid fa-user-doctor"></i></div>
+        <h2>Anaesthesiologist Logbook</h2>
+        <p>Doctor Sign In &amp; Registration Portal</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button type="button" id="tabBtnSignIn" class="auth-tab-btn active" onclick="switchAuthTab('signin')">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
+        <button type="button" id="tabBtnSignUp" class="auth-tab-btn" onclick="switchAuthTab('signup')">
+          <i class="fa-solid fa-user-plus"></i> Sign Up
+        </button>
+      </div>
+
+      <div class="auth-body">
+        <div id="authStatusMsg" class="auth-msg"></div>
+
+        <!-- SIGN IN PANEL (Mobile Number + Password) -->
+        <div id="authSignInPanel">
+          <div class="fg">
+            <label for="siMobile">Mobile Number</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-mobile-screen-button left-ico"></i>
+              <input type="text" id="siMobile" maxlength="20" placeholder="Enter mobile number" autocomplete="username">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label for="siPassword">Password</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-lock left-ico"></i>
+              <input type="password" id="siPassword" placeholder="Enter your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleSignIn()">
+              <button type="button" class="pass-toggle-btn" id="btnToggleSiPass" onclick="togglePassVisibility('siPassword','btnToggleSiPass')" title="Show/Hide Password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:0.78rem;color:#475569">
+            <label style="border:none;padding:0;margin:0;text-transform:none;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="checkbox" id="siRemember" checked style="width:15px;height:15px;accent-color:var(--pri)"> Keep me signed in
+            </label>
+            <span style="color:var(--pri);font-weight:700;cursor:pointer" onclick="switchAuthTab('signup')">New Doctor? Sign Up</span>
+          </div>
+
+          <button type="button" class="btn" id="btnSignIn" onclick="handleSignIn()">
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          </button>
+        </div>
+
+        <!-- SIGN UP PANEL (Doctor Name + Mobile Number + Password) -->
+        <div id="authSignUpPanel" style="display:none">
+          <div class="fg">
+            <label for="suDocName">Doctor Name</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-user-doctor left-ico"></i>
+              <input type="text" id="suDocName" placeholder="e.g. Dr. Naveenkumar S" autocomplete="name">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label for="suMobile">Mobile Number</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-mobile-screen-button left-ico"></i>
+              <input type="tel" id="suMobile" inputmode="numeric" maxlength="15" placeholder="Enter 10-digit mobile number" autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="fg">
+            <label for="suPassword">Create Password</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-key left-ico"></i>
+              <input type="password" id="suPassword" placeholder="Minimum 4 characters" autocomplete="new-password">
+              <button type="button" class="pass-toggle-btn" id="btnToggleSuPass" onclick="togglePassVisibility('suPassword','btnToggleSuPass')" title="Show/Hide Password">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="fg">
+            <label for="suConfirmPass">Confirm Password</label>
+            <div class="input-icon-wrap">
+              <i class="fa-solid fa-shield-halved left-ico"></i>
+              <input type="password" id="suConfirmPass" placeholder="Re-enter password" autocomplete="new-password" onkeydown="if(event.key==='Enter')handleSignUp()">
+            </div>
+          </div>
+
+          <button type="button" class="btn" id="btnSignUp" onclick="handleSignUp()">
+            <i class="fa-solid fa-user-check"></i> Sign Up
+          </button>
+
+          <div style="text-align:center;margin-top:12px;font-size:0.78rem;color:#475569">
+            Already have an account? <span style="color:var(--pri);font-weight:700;cursor:pointer" onclick="switchAuthTab('signin')">Sign In here</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION HEADER -->
+  <header>
+    <h1><i class="fa-solid fa-syringe"></i> Anaesthesiologist Logbook</h1>
+    <div class="hdr-right">
+      <div id="hdrDocName" class="hdr-doc" onclick="showTab('tabSettings')" style="display:none"></div>
+      <div class="hdr-pills">
+        <!-- Visible ONLY when Admin is logged in -->
+        <button type="button" id="hdrAdminBadge" class="admin-pill" onclick="openAdminDbSection()" title="Admin Database & Plan Approvals">
+          <i class="fa-solid fa-shield-halved"></i> <span>Admin DB</span>
+        </button>
+        <div id="hdrDriveBadge" class="drv-pill" onclick="handleHeaderStorageBadgeClick()" title="Storage & Plan Status">
+          <i class="fa-solid fa-hard-drive"></i> <span>Free • Local</span>
+        </div>
+        <button type="button" id="hdrLogoutBtn" class="logout-pill" onclick="logoutDoctor()" title="Sign Out">
+          <i class="fa-solid fa-power-off"></i> <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </header>
+  
+  <div id="modalOverlay" onclick="this.style.display='none'">
+    <img id="modalImg" src="" alt="OT Sheet Preview">
+    <div style="margin-top:12px;display:flex;gap:10px">
+      <a id="modalDriveBtn" href="https://drive.google.com" target="_blank" class="act-btn" style="background:#0284c7;color:#fff;padding:8px 14px" onclick="event.stopPropagation()"><i class="fa-solid fa-up-right-from-square"></i> Open in Drive</a>
+      <button type="button" class="act-btn" style="background:#ef4444;color:#fff;padding:8px 14px">Close Preview</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- TAB 1: LOGBOOK ENTRY -->
+    <div id="tabLogger">
+      <div class="card">
+        <div id="formTitle" style="display:none;font-size:1rem;font-weight:700;color:var(--pri);margin-bottom:10px;"></div>
+        <input type="hidden" id="editId" value="">
+        
+        <div class="fg">
+          <label>Date</label>
+          <input type="date" id="cDate">
+        </div>
+
+        <div class="fg">
+          <div class="lbl-row">
+            <label style="margin:0">Hospital Name</label>
+            <button type="button" class="mini-btn" onclick="addCustom('hosp')">+ Add Custom</button>
+          </div>
+          <input type="text" id="cHosp" list="hospList" placeholder="Start typing or select hospital...">
+          <datalist id="hospList"></datalist>
+        </div>
+
+        <div class="row">
+          <div class="fg" style="flex:1.35"><label>Patient ID</label><input type="text" id="cPatId" placeholder="IP / UHID"></div>
+          <div class="fg" style="flex:0.75"><label>Age</label><input type="number" id="cAge" inputmode="numeric" placeholder="Yrs"></div>
+          <div class="fg" style="flex:1"><label>Sex</label><select id="cSex"><option>Male</option><option>Female</option><option>Other</option></select></div>
+        </div>
+
+        <div class="row">
+          <div class="fg col">
+            <label>Elective / Emergency</label>
+            <select id="cPrio" onchange="renderAsaPills()"><option>Elective</option><option>Emergency</option></select>
+          </div>
+          <div class="fg col">
+            <label>Supervision</label>
+            <select id="cSup">
+              <option>No Supervision</option>
+              <option>Direct Supervision</option>
+              <option>Indirect Supervision</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fg">
+          <div class="lbl-row">
+            <label style="margin:0">Specialty</label>
+            <button type="button" class="mini-btn" onclick="addCustom('spec')">+ Add Custom</button>
+          </div>
+          <input type="text" id="cSpec" list="specList" placeholder="Start typing specialty..." oninput="updateProcedureSuggestions()">
+          <datalist id="specList"></datalist>
+        </div>
+
+        <div class="fg">
+          <div class="lbl-row">
+            <label style="margin:0">Diagnosis</label>
+            <button type="button" class="mini-btn" onclick="addCustom('diag')">+ Add Custom</button>
+          </div>
+          <input type="text" id="cDiag" list="diagList" placeholder="Start typing or select diagnosis...">
+          <datalist id="diagList"></datalist>
+        </div>
+
+        <div class="fg">
+          <div class="lbl-row">
+            <label style="margin:0">Surgical Procedure</label>
+            <button type="button" class="mini-btn" onclick="addCustom('proc')">+ Add Custom</button>
+          </div>
+          <input type="text" id="cProc" list="procList" placeholder="Start typing or select procedure...">
+          <datalist id="procList"></datalist>
+          <div id="procSpecHint" style="font-size:0.7rem;color:var(--muted);margin-top:3px"></div>
+        </div>
+
+        <div class="fg">
+          <label>Comorbidities</label>
+          <div class="pill-group" id="comorbidPills"></div>
+          <input type="text" id="cComOther" placeholder="Other comorbidities..." style="margin-top:6px">
+        </div>
+
+        <div class="fg">
+          <label>ASA Physical Status</label>
+          <div class="pill-group" id="asaPills"></div>
+        </div>
+
+        <div class="fg">
+          <div class="lbl-row">
+            <label style="margin:0">Anaesthesia Technique</label>
+            <button type="button" class="mini-btn" onclick="addCustom('tech')">+ Add Custom</button>
+          </div>
+          <input type="text" id="cTech" list="techList" placeholder="Start typing technique..." oninput="checkAirway()">
+          <datalist id="techList"></datalist>
+        </div>
+
+        <div id="airwayBox" class="cond-box">
+          <label style="color:var(--pri)">Airway Management (GA / ETT / LMA)</label>
+          <div class="row" style="margin-top:6px">
+            <div class="fg col"><label>Pre-op MMS</label><select id="cMMS"><option>1</option><option>2</option><option>3</option><option>4</option><option>0</option><option>Not Assessed</option></select></div>
+            <div class="fg col"><label>Cormack-Lehane</label><select id="cCL"><option>1</option><option>2</option><option>2a</option><option>2b</option><option>3a</option><option>3b</option><option>4</option></select></div>
+          </div>
+          <input type="text" id="cAirNotes" placeholder="Tube size, blade, intubation notes...">
+        </div>
+
+        <div class="fg">
+          <label>Analgesia</label>
+          <div class="pill-group" id="analgPills"></div>
+          <input type="text" id="cAnalgOther" placeholder="Other analgesia / blocks / doses..." style="margin-top:6px">
+        </div>
+
+        <div class="fg">
+          <label>Difficult Airway / Special Notes</label>
+          <input type="text" id="cDiff" placeholder="e.g. C-MAC, Bougie, Arterial line (or Nil)">
+        </div>
+
+        <div class="fg">
+          <label>Complications</label>
+          <div class="pill-group" id="compPills"></div>
+          <input type="text" id="cCompOther" placeholder="Other complications / management..." style="margin-top:6px">
+        </div>
+
+        <div class="card" style="background:#f8fafc;border:1px solid #94a3b8;margin-bottom:14px">
+          <div style="font-size:0.86rem;font-weight:800;color:var(--pri-dk);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.03em;">
+            <i class="fa-solid fa-bed-pulse"></i> Post-op Details
+          </div>
+          <div class="fg" style="margin-bottom:10px">
+            <label style="font-size:0.75rem">Post-op Plan</label>
+            <div class="pill-group" id="postOpPlanPills"></div>
+            <input type="text" id="cPostOpPlanOther" placeholder="Other post-op plan..." style="margin-top:6px">
+          </div>
+          <div class="fg" style="margin-bottom:4px">
+            <label style="font-size:0.75rem">Immediate Post-op Pain Score (NRS 0–10)</label>
+            <div class="pill-group" id="painScorePills"></div>
+          </div>
+        </div>
+
+        <div class="fg" style="background:#f0fdfa;padding:11px;border-radius:8px;border:1px dashed var(--pri)">
+          <label style="color:var(--pri)">Attach OT Record Sheet</label>
+          <input type="file" id="cFiles" accept="image/*,application/pdf" multiple style="padding:4px 0;font-size:0.84rem" onchange="updateFileStatus(this)">
+          <div id="fileStatus" style="font-size:0.75rem;color:#059669;font-weight:700;margin-top:3px"></div>
+          <div id="currFiles" style="margin-top:3px"></div>
+        </div>
+
+        <button type="button" class="btn" id="saveBtn" onclick="saveCase()"><i class="fa-solid fa-floppy-disk"></i> Save Case</button>
+        <button type="button" class="btn btn-sec" style="margin-top:8px;display:none" id="cancelBtn" onclick="resetForm();showTab('tabLedger')">Cancel Edit</button>
+      </div>
+    </div>
+
+    <!-- TAB 2: LEDGER -->
+    <div id="tabLedger" style="display:none">
+      <div class="lbl-row" style="margin-bottom:8px">
+        <h2 style="font-size:1.08rem">My Logbook Records</h2>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <button type="button" id="btnLedgerPullDrive" class="mini-btn" style="padding:6px 9px;font-size:0.72rem;background:#00897b;color:#fff;border:none;display:none" onclick="pullDatabaseFromDrive(false)"><i class="fa-solid fa-arrows-rotate"></i> Pull Drive</button>
+          <button type="button" id="btnLedgerPushDrive" class="mini-btn" style="padding:6px 9px;font-size:0.72rem;background:#0284c7;color:#fff;border:none;display:none" onclick="syncAllToDrive()"><i class="fa-solid fa-cloud-arrow-up"></i> Upload to Drive</button>
+          <button type="button" id="btnLedgerPremiumSync" class="mini-btn" style="padding:6px 9px;font-size:0.72rem;background:#7c3aed;color:#fff;border:none;display:none" onclick="syncPremiumCloudNow()"><i class="fa-solid fa-database"></i> Sync Our DB</button>
+          <button type="button" class="mini-btn" style="padding:6px 9px;font-size:0.72rem;background:#0f172a;color:#fff;border:none" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
+        </div>
+      </div>
+      <div class="fg" style="margin-bottom:10px">
+        <input type="search" id="ledgerSearch" placeholder="Search procedure, diagnosis, patient ID, specialty..." oninput="renderLedger()">
+      </div>
+      <div id="ledgerList"></div>
+    </div>
+
+    <!-- TAB 3: SUMMARY -->
+    <div id="tabSummary" style="display:none">
+      <div class="lbl-row" style="margin-bottom:10px">
+        <h2 style="font-size:1.08rem"><i class="fa-solid fa-chart-pie" style="color:var(--pri)"></i> Analytics &amp; Summary</h2>
+        <button type="button" class="mini-btn" style="padding:6px 10px;font-size:0.74rem;background:#0f172a;color:#fff;border:none" onclick="exportCSV()"><i class="fa-solid fa-file-csv"></i> Download CSV</button>
+      </div>
+
+      <div class="stat-grid-4">
+        <div class="stat-box" style="border-top:3px solid var(--pri)">
+          <div class="stat-num" id="sumTotal">0</div>
+          <div class="stat-lbl">Total Cases</div>
+        </div>
+        <div class="stat-box" style="border-top:3px solid #0284c7">
+          <div class="stat-num" id="sumElective">0</div>
+          <div class="stat-lbl">Elective</div>
+        </div>
+        <div class="stat-box" style="border-top:3px solid #ef4444">
+          <div class="stat-num" id="sumEmergency">0</div>
+          <div class="stat-lbl">Emergency</div>
+        </div>
+        <div class="stat-box" style="border-top:3px solid #059669">
+          <div class="stat-num" id="sumNoSup">0</div>
+          <div class="stat-lbl">Independent / No Sup</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label style="margin-bottom:8px"><i class="fa-solid fa-chart-pie"></i> Case Distribution Charts</label>
+        <div class="chart-container">
+          <div style="text-align:center">
+            <div style="font-size:0.75rem;font-weight:700;color:#475569;margin-bottom:4px">Case Priority</div>
+            <div class="donut-wrap">
+              <svg id="donutUrgency" width="130" height="130" viewBox="0 0 42 42"></svg>
+              <div class="donut-center">
+                <div class="dc-num" id="donutUrgTotal">0</div>
+                <div class="dc-lbl">Cases</div>
+              </div>
+            </div>
+            <div class="legend-box" id="legendUrgency" style="margin-top:6px"></div>
+          </div>
+
+          <div style="text-align:center">
+            <div style="font-size:0.75rem;font-weight:700;color:#475569;margin-bottom:4px">Supervision Level</div>
+            <div class="donut-wrap">
+              <svg id="donutSupervision" width="130" height="130" viewBox="0 0 42 42"></svg>
+              <div class="donut-center">
+                <div class="dc-num" id="donutSupTotal">0</div>
+                <div class="dc-lbl">Cases</div>
+              </div>
+            </div>
+            <div class="legend-box" id="legendSupervision" style="margin-top:6px"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <label style="margin-bottom:8px"><i class="fa-solid fa-stethoscope"></i> Specialty Distribution</label>
+        <div id="sumSpecList"></div>
+      </div>
+
+      <div class="card">
+        <label style="margin-bottom:8px"><i class="fa-solid fa-syringe"></i> Anaesthesia Techniques</label>
+        <div id="sumTechList"></div>
+      </div>
+
+      <div class="card">
+        <label style="margin-bottom:8px"><i class="fa-solid fa-heart-pulse"></i> ASA Physical Status</label>
+        <div id="sumAsaList"></div>
+      </div>
+
+      <div class="card">
+        <label style="margin-bottom:8px"><i class="fa-regular fa-hospital"></i> Hospital Distribution</label>
+        <div id="sumHospList"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SETTINGS, SUBSCRIPTION PLANS (FREE & PREMIUM) & ADMIN CONTROL PANEL -->
+    <div id="tabSettings" style="display:none">
+
+      <!-- ====================================================================
+           ADMIN-ONLY DATABASE & PLAN APPROVAL PANEL
+           (Strictly hidden for all normal users; only visible to Admin)
+           ==================================================================== -->
+      <div id="adminDbPanel" class="card" style="display:none;border:2px solid #0f172a;background:#f8fafc">
+        <div class="lbl-row" style="margin-bottom:10px;border-bottom:2px solid #cbd5e1;padding-bottom:8px">
+          <h2 style="font-size:1.05rem;color:#0f172a">
+            <i class="fa-solid fa-shield-halved" style="color:#dc2626"></i> Admin Control Panel — Premium Approvals &amp; Database
+          </h2>
+          <span class="badge-ok" style="background:#fef08a;color:#854d0e;border-color:#fde047">
+            <i class="fa-solid fa-lock"></i> Admin Only
+          </span>
+        </div>
+
+        <div class="stat-grid-4" style="grid-template-columns:repeat(4,1fr);margin-bottom:12px">
+          <div class="stat-box" style="border-top:3px solid #0f172a">
+            <div class="stat-num" id="admTotalDocs">0</div>
+            <div class="stat-lbl">Total Doctors</div>
+          </div>
+          <div class="stat-box" style="border-top:3px solid #f59e0b">
+            <div class="stat-num" id="admPendingReqs" style="color:#d97706">0</div>
+            <div class="stat-lbl">Pending Requests</div>
+          </div>
+          <div class="stat-box" style="border-top:3px solid #7c3aed">
+            <div class="stat-num" id="admTotalCasesAll">0</div>
+            <div class="stat-lbl">Our DB Cases</div>
+          </div>
+          <div class="stat-box" style="border-top:3px solid #059669">
+            <div class="stat-num" id="admDbStatusLabel" style="font-size:0.85rem;line-height:1.6">Ready</div>
+            <div class="stat-lbl">DB Mode</div>
+          </div>
+        </div>
+
+        <!-- PENDING PREMIUM PLAN UPGRADE REQUESTS QUEUE -->
+        <div class="fg" style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:11px">
+          <div class="lbl-row" style="margin-bottom:6px">
+            <label style="margin:0;color:#b45309;border-left-color:#f59e0b">
+              <i class="fa-solid fa-bell"></i> Pending Premium Plan Requests (Approve / Reject)
+            </label>
+            <button type="button" class="mini-btn" onclick="refreshAdminDoctorsList()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          </div>
+          <div id="adminPendingPlansBox" style="font-size:0.8rem;color:#475569">
+            No pending Premium upgrade requests right now.
+          </div>
+        </div>
+
+        <!-- ALL REGISTERED DOCTORS TABLE -->
+        <div class="fg">
+          <div class="lbl-row">
+            <label style="margin:0">All Registered Doctors &amp; Active Plans</label>
+            <button type="button" class="mini-btn" style="background:#0f172a;color:#fff;border:none" onclick="exportAllDoctorsAdminCSV()"><i class="fa-solid fa-file-export"></i> Export Users CSV</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Doctor Name</th>
+                  <th>Mobile</th>
+                  <th>Active Plan</th>
+                  <th>Request Status</th>
+                  <th>Storage Used</th>
+                  <th>Admin Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminDoctorsTableBody">
+                <tr><td colspan="6" style="text-align:center;color:#64748b">No doctors registered yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="fg" style="background:#fff;padding:10px;border-radius:8px;border:1px solid #cbd5e1">
+          <label>Hostinger MySQL API Endpoint (<code>api.php</code>)</label>
+          <input type="url" id="sHostingerUrl" placeholder="api.php (or https://yourdomain.com/api.php)" oninput="saveHostingerApiUrl(this.value)">
+          <div class="row" style="margin-top:8px">
+            <button type="button" class="btn" style="flex:1;background:#0f172a;font-size:0.82rem;padding:9px" onclick="testHostingerConnection()">
+              <i class="fa-solid fa-plug-circle-check"></i> Test Hostinger DB
+            </button>
+            <button type="button" class="btn" style="flex:1;background:#0d9488;font-size:0.82rem;padding:9px" onclick="refreshAdminDoctorsList()">
+              <i class="fa-solid fa-database"></i> Sync Users List
+            </button>
+          </div>
+          <div id="hostingerTestStatus" class="diag-box"></div>
+        </div>
+
+        <div class="fg" style="background:#fff;padding:10px;border-radius:8px;border:1px solid #cbd5e1;margin-bottom:0">
+          <label>Update Admin Login Credentials</label>
+          <div class="row">
+            <div class="col">
+              <input type="text" id="admNewUser" placeholder="Admin ID / Mobile (default: admin)">
+            </div>
+            <div class="col">
+              <input type="password" id="admNewPass" placeholder="New Admin Password">
+            </div>
+          </div>
+          <button type="button" class="btn" style="margin-top:8px;background:#334155;font-size:0.82rem;padding:9px" onclick="saveAdminCredentials()">
+            <i class="fa-solid fa-key"></i> Update Admin Password
+          </button>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           SECTION 1: DOCTOR PROFILE & DETAILS
+           ==================================================================== -->
+      <div class="card">
+        <div class="lbl-row" style="margin-bottom:10px">
+          <h2 style="font-size:1.05rem"><i class="fa-solid fa-user-doctor" style="color:var(--pri)"></i> 1. Doctor Profile &amp; Details</h2>
+          <button type="button" class="mini-btn" style="background:#fee2e2;color:#dc2626;border-color:#fecaca;padding:4px 9px" onclick="logoutDoctor()">
+            <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+          </button>
+        </div>
+        
+        <div class="row">
+          <div class="fg" style="flex:1.4">
+            <label>Name of the Doctor</label>
+            <input type="text" id="dName" placeholder="e.g. Dr. Naveenkumar S" oninput="saveDocProfile(false)">
+          </div>
+          <div class="fg" style="flex:1">
+            <label>Date of Birth</label>
+            <input type="date" id="dDob" oninput="saveDocProfile(false)">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="fg col">
+            <label>Registration Number</label>
+            <input type="text" id="dReg" placeholder="e.g. 123456" oninput="saveDocProfile(false)">
+          </div>
+          <div class="fg col">
+            <label>Qualifications</label>
+            <input type="text" id="dQual" placeholder="e.g. MBBS, MD (Anaes)" oninput="saveDocProfile(false)">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="fg col">
+            <label>Designation</label>
+            <input type="text" id="dDesig" placeholder="e.g. Assistant Professor" oninput="saveDocProfile(false)">
+          </div>
+          <div class="fg col">
+            <label>Medical Council</label>
+            <input type="text" id="dCouncil" placeholder="e.g. Tamil Nadu Medical Council" oninput="saveDocProfile(false)">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="fg" style="flex:1.5">
+            <label>Address</label>
+            <input type="text" id="dAddr" placeholder="Hospital / Residential Address..." oninput="saveDocProfile(false)">
+          </div>
+          <div class="fg" style="flex:1">
+            <label>Country</label>
+            <input type="text" id="dCountry" placeholder="e.g. India" oninput="saveDocProfile(false)">
+          </div>
+        </div>
+
+        <button type="button" class="btn" onclick="saveDocProfile(true)"><i class="fa-solid fa-user-check"></i> Save Doctor Details</button>
+        <div id="docSaveStatus" class="diag-box"></div>
+      </div>
+
+      <!-- ====================================================================
+           SECTION 2: SUBSCRIPTION PLANS (FREE PLAN & PREMIUM PLAN ONLY)
+           ==================================================================== -->
+      <div class="card" id="planSubscriptionCard">
+        <div class="lbl-row" style="margin-bottom:8px">
+          <h2 style="font-size:1.05rem"><i class="fa-solid fa-crown" style="color:#f59e0b"></i> 2. Subscription &amp; Storage Plans</h2>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span id="currentPlanBadge" class="badge-ok">FREE PLAN</span>
+            <button type="button" class="mini-btn" onclick="refreshMyPlanFromServer()" title="Check if Admin approved your plan">
+              <i class="fa-solid fa-arrows-rotate"></i> Check Status
+            </button>
+          </div>
+        </div>
+
+        <p style="font-size:0.79rem;color:var(--muted);line-height:1.45;margin-bottom:8px">
+          By default, your account includes the <b>Free Plan</b> (Local Device Storage). Upgrade to the <b>Premium Plan</b> to unlock Cloud Storage with your choice of <b>Google Drive</b> or <b>Our Cloud Database</b>.
+        </p>
+
+        <!-- Live Request Status Banner (Pending / Approved / Rejected) -->
+        <div id="userPlanRequestBanner" class="diag-box" style="margin-bottom:10px"></div>
+
+        <div class="plans-grid-2">
+          <!-- TIER 1: FREE PLAN -->
+          <div class="plan-card free-card" id="planCardFree">
+            <div>
+              <div class="plan-name">
+                <span><i class="fa-solid fa-mobile-screen" style="color:#64748b"></i> Free Plan</span>
+                <span style="font-size:0.7rem;background:#e2e8f0;color:#334155;padding:2px 7px;border-radius:5px">Default</span>
+              </div>
+              <div class="plan-sub">Local Device Storage Only</div>
+              <ul class="plan-feats">
+                <li><i class="fa-solid fa-check" style="color:#10b981"></i> Unlimited case logging on this device</li>
+                <li><i class="fa-solid fa-check" style="color:#10b981"></i> Visual analytics &amp; CSV download</li>
+                <li><i class="fa-solid fa-xmark" style="color:#94a3b8"></i> No Google Drive cloud backup</li>
+                <li><i class="fa-solid fa-xmark" style="color:#94a3b8"></i> No Server Database cloud backup</li>
+              </ul>
+            </div>
+            <button type="button" class="plan-btn" id="btnSelectFree" style="background:#e2e8f0;color:#475569" disabled>
+              Active Plan (Local Storage)
+            </button>
+          </div>
+
+          <!-- TIER 2: PREMIUM PLAN -->
+          <div class="plan-card premium-card" id="planCardPremium">
+            <div>
+              <div class="plan-name">
+                <span><i class="fa-solid fa-crown" style="color:#7c3aed"></i> Premium Plan</span>
+                <span style="font-size:0.7rem;background:#ede9fe;color:#6d28d9;padding:2px 7px;border-radius:5px">Cloud Storage</span>
+              </div>
+              <div class="plan-sub">Includes 2 Cloud Storage Options</div>
+              <ul class="plan-feats">
+                <li><i class="fa-solid fa-check" style="color:#7c3aed"></i> <b>Option 1 — Google Drive:</b> Sign in &amp; store cases on your own Google Drive</li>
+                <li><i class="fa-solid fa-check" style="color:#7c3aed"></i> <b>Option 2 — Our Database:</b> Store cases directly on our dedicated Cloud Database</li>
+                <li><i class="fa-solid fa-check" style="color:#7c3aed"></i> Switch between Google Drive or Our Database anytime</li>
+              </ul>
+            </div>
+            <button type="button" class="plan-btn" id="btnBuyPremium" style="background:#7c3aed;color:#fff" onclick="requestPlanUpgrade('premium')">
+              <i class="fa-solid fa-cart-shopping"></i> Buy / Request Premium Plan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====================================================================
+           SECTION 3: PREMIUM STORAGE SELECTOR (2 OPTIONS: GOOGLE DRIVE vs OUR DB)
+           Visible ONLY when user's active plan is PREMIUM
+           ==================================================================== -->
+      <div class="card" id="premiumCloudSection" style="display:none;border-top:4px solid #7c3aed">
+        <div class="lbl-row" style="margin-bottom:6px">
+          <h2 style="font-size:1.05rem;color:#5b21b6"><i class="fa-solid fa-cloud"></i> 3. Premium Cloud Storage — Select Your Storage</h2>
+          <span class="badge-ok" style="background:#ede9fe;color:#6d28d9;border-color:#ddd6fe">Premium Unlocked</span>
+        </div>
+        <p style="font-size:0.79rem;color:#475569;margin-bottom:8px;line-height:1.45">
+          Choose where your logbook cases and patient records should be stored:
+        </p>
+
+        <!-- 2 OPTION BUTTONS: 1. GOOGLE DRIVE | 2. OUR OWN DATABASE -->
+        <div class="storage-opt-grid">
+          <button type="button" id="btnOptGdrive" class="storage-opt-btn" onclick="selectPremiumStorageMode('gdrive')">
+            <div class="storage-opt-head">
+              <span><i class="fa-brands fa-google-drive" style="color:#0284c7;font-size:1.05rem"></i> 1. Google Drive</span>
+              <span id="badgeOptGdrive" class="mini-btn">Select</span>
+            </div>
+            <div class="storage-opt-desc">
+              Sign in with your Google account and store all logbook cases &amp; OT sheets on <b>your own Google Drive</b>.
+            </div>
+          </button>
+
+          <button type="button" id="btnOptOurDb" class="storage-opt-btn" onclick="selectPremiumStorageMode('our_db')">
+            <div class="storage-opt-head">
+              <span><i class="fa-solid fa-database" style="color:#7c3aed;font-size:1.05rem"></i> 2. Our Database</span>
+              <span id="badgeOptOurDb" class="mini-btn">Select</span>
+            </div>
+            <div class="storage-opt-desc">
+              Simply store and sync all your patient cases directly on <b>our Cloud Server Database</b> automatically.
+            </div>
+          </button>
+        </div>
+
+        <!-- PANEL A: WHEN "OUR OWN DATABASE" IS SELECTED -->
+        <div id="ourDbStorageSubPanel" style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:10px;padding:12px;display:none">
+          <div style="font-size:0.84rem;font-weight:800;color:#5b21b6;margin-bottom:4px">
+            <i class="fa-solid fa-circle-check"></i> Storing on Our Cloud Server Database
+          </div>
+          <p style="font-size:0.77rem;color:#475569;margin-bottom:10px;line-height:1.4">
+            Every case you save is automatically stored in our central database linked to your mobile number.
+          </p>
+          <div class="row">
+            <button type="button" class="btn" style="flex:1;background:#7c3aed;font-size:0.82rem;padding:9px" onclick="syncPremiumCloudNow()">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Sync Cases to Our DB Now
+            </button>
+            <button type="button" class="btn" style="flex:1;background:#0d9488;font-size:0.82rem;padding:9px" onclick="pullPremiumCloudNow()">
+              <i class="fa-solid fa-cloud-arrow-down"></i> Pull My Cases from Our DB
+            </button>
+          </div>
+        </div>
+
+        <!-- PANEL B: WHEN "GOOGLE DRIVE" IS SELECTED -->
+        <div id="gdriveStorageSubPanel" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;display:none">
+          <div class="lbl-row" style="margin-bottom:8px">
+            <div style="font-size:0.84rem;font-weight:800;color:#0369a1">
+              <i class="fa-brands fa-google-drive"></i> Google Drive Account Connection
+            </div>
+            <button type="button" class="mini-btn" style="background:#0284c7;color:#fff;border:none;padding:4px 9px" onclick="openGdriveLoginModal()">
+              <i class="fa-brands fa-google"></i> <span id="btnGdriveLoginLabel">Sign in with Google Drive</span>
+            </button>
+          </div>
+
+          <div id="gdriveConnectedStatus" style="font-size:0.78rem;color:#334155;margin-bottom:10px;padding:8px 10px;background:#fff;border-radius:8px;border:1px solid #cbd5e1"></div>
+
+          <div class="fg" style="margin-bottom:10px">
+            <label>Google Drive Web App URL (Personal Drive Connector)</label>
+            <input type="url" id="sUrl" placeholder="https://script.google.com/macros/s/.../exec" oninput="autoSaveUrl()">
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <button type="button" class="btn" style="flex:1;font-size:0.82rem;padding:9px" onclick="saveSettings()"><i class="fa-solid fa-floppy-disk"></i> Save Drive Config</button>
+            <button type="button" class="btn" style="flex:1;background:#0284c7;font-size:0.82rem;padding:9px" id="btnTestDrive" onclick="testDriveAccess()"><i class="fa-solid fa-vial-circle-check"></i> Check Drive Access</button>
+          </div>
+          <div class="row" style="margin-bottom:8px">
+            <button type="button" class="btn" style="flex:1;background:#0d9488;font-size:0.82rem;padding:9px" onclick="pullDatabaseFromDrive(false)"><i class="fa-solid fa-cloud-arrow-down"></i> Pull from My Drive</button>
+            <button type="button" class="btn" style="flex:1;background:#059669;font-size:0.82rem;padding:9px" onclick="syncAllToDrive()"><i class="fa-solid fa-cloud-arrow-up"></i> Push Cases &amp; CSV to My Drive</button>
+          </div>
+          <button type="button" class="btn btn-sec" style="font-size:0.78rem;padding:8px" onclick="openUrlDirectly()">
+            <i class="fa-solid fa-up-right-from-square"></i> Open Script URL in Browser Tab
+          </button>
+          <div id="testStatus" class="diag-box"></div>
+
+          <!-- File Upload Status Check inside Google Drive Panel -->
+          <div style="margin-top:12px;padding-top:12px;border-top:1px dashed #93c5fd">
+            <div class="lbl-row">
+              <label style="margin:0"><i class="fa-solid fa-file-shield"></i> OT Sheet Drive Upload Status</label>
+              <button type="button" class="mini-btn" onclick="checkUploadStatus()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            </div>
+            <div class="stat-grid-4" style="grid-template-columns:repeat(3,1fr);margin-top:8px">
+              <div class="stat-box">
+                <div class="stat-num" id="stTotalFiles">0</div>
+                <div class="stat-lbl">Total Files</div>
+              </div>
+              <div class="stat-box" style="border-color:#86efac;background:#f0fdf4">
+                <div class="stat-num" style="color:#15803d" id="stSyncedFiles">0</div>
+                <div class="stat-lbl" style="color:#15803d">On Drive</div>
+              </div>
+              <div class="stat-box" style="border-color:#fde68a;background:#fffbeb">
+                <div class="stat-num" style="color:#b45309" id="stLocalFiles">0</div>
+                <div class="stat-lbl" style="color:#b45309">Local Only</div>
+              </div>
+            </div>
+            <button type="button" class="btn" id="btnSyncAll" style="background:#059669;margin-top:6px;font-size:0.82rem;padding:9px" onclick="syncPendingUploads(false)">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Sync Local Files to My Google Drive
+            </button>
+            <div id="syncStatusBox" class="diag-box"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- BOTTOM NAVIGATION (4 TABS) -->
+  <nav class="b-nav">
+    <button type="button" class="nav-btn active" id="nav0" onclick="showTab('tabLogger')"><i class="fa-solid fa-notes-medical"></i><span>Logbook</span></button>
+    <button type="button" class="nav-btn" id="nav1" onclick="showTab('tabLedger')"><i class="fa-solid fa-book-medical"></i><span>Ledger</span></button>
+    <button type="button" class="nav-btn" id="nav2" onclick="showTab('tabSummary')"><i class="fa-solid fa-chart-pie"></i><span>Summary</span></button>
+    <button type="button" class="nav-btn" id="nav3" onclick="showTab('tabSettings')"><i class="fa-solid fa-gear"></i><span>Settings</span></button>
+  </nav>
+
+  <script>
+    // =========================================================================
+    // SAFE LOCAL STORAGE & CUSTOM NON-BLOCKING UI DIALOGS
+    // =========================================================================
+    const safeGetRaw = (k) => {
+      try { return localStorage.getItem(k); } catch (e) { return null; }
+    };
+    const safeSetRaw = (k, v) => {
+      try { localStorage.setItem(k, v); return true; } catch (e) { return false; }
+    };
+    const safeRemoveRaw = (k) => {
+      try { localStorage.removeItem(k); } catch (e) {}
+    };
+    const getLS = (k, d = []) => {
+      try {
+        const raw = safeGetRaw(k);
+        return raw ? (JSON.parse(raw) || d) : d;
+      } catch (e) { return d; }
+    };
+    const setLS = (k, v) => {
+      try { safeSetRaw(k, JSON.stringify(v)); } catch (e) {}
+    };
+
+    let toastTimer = null;
+    function showToast(msg, isError = false) {
+      const tb = document.getElementById('toastBanner');
+      if (!tb) return;
+      tb.textContent = msg;
+      tb.style.borderLeftColor = isError ? '#ef4444' : '#10b981';
+      tb.style.display = 'block';
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { tb.style.display = 'none'; }, 3800);
+    }
+
+    function showCustomModal({ title = 'Notification', message = '', showCancel = false, showInput = false, defaultValue = '' }) {
+      return new Promise(resolve => {
+        const ov = document.getElementById('customDialogOverlay');
+        const tEl = document.getElementById('cdTitle');
+        const mEl = document.getElementById('cdMessage');
+        const inWrap = document.getElementById('cdInputWrap');
+        const inEl = document.getElementById('cdInput');
+        const cancelBtn = document.getElementById('cdCancelBtn');
+        const okBtn = document.getElementById('cdOkBtn');
+
+        tEl.innerHTML = `<i class="fa-solid fa-circle-info" style="color:var(--pri)"></i> <span>${title}</span>`;
+        mEl.textContent = message;
+        inWrap.style.display = showInput ? 'block' : 'none';
+        inEl.value = defaultValue || '';
+        cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+        ov.style.display = 'flex';
+        if (showInput) setTimeout(() => inEl.focus(), 50);
+
+        const cleanup = (val) => {
+          ov.style.display = 'none';
+          okBtn.onclick = null;
+          cancelBtn.onclick = null;
+          inEl.onkeydown = null;
+          resolve(val);
+        };
+
+        okBtn.onclick = () => cleanup(showInput ? inEl.value : true);
+        cancelBtn.onclick = () => cleanup(showInput ? null : false);
+        if (showInput) {
+          inEl.onkeydown = (ev) => {
+            if (ev.key === 'Enter') cleanup(inEl.value);
+            if (ev.key === 'Escape') cleanup(null);
+          };
+        }
+      });
+    }
+
+    function uiAlert(msg, title = 'Notice') {
+      showToast(msg, title.toLowerCase().includes('error'));
+      return showCustomModal({ title, message: msg, showCancel: false, showInput: false });
+    }
+
+    function uiConfirm(msg, title = 'Confirm Action') {
+      return showCustomModal({ title, message: msg, showCancel: true, showInput: false });
+    }
+
+    function uiPrompt(msg, def = '', title = 'Enter Value') {
+      return showCustomModal({ title, message: msg, showCancel: true, showInput: true, defaultValue: def });
+    }
+
+    // =========================================================================
+    // 2-TIER PLAN SYSTEM (FREE vs PREMIUM) + 2 PREMIUM STORAGE MODES
+    //   - Free Plan: Local storage only
+    //   - Premium Plan: User selects either:
+    //       1. 'gdrive' (asks Google Drive login & stores on their own Drive)
+    //       2. 'our_db' (stores directly on our Hostinger MySQL Database)
+    // =========================================================================
+    function getCurrentUserPlanInfo() {
+      const active = getLS('el_active_doctor', null);
+      if (!active) {
+        return { plan: 'free', requested_plan: '', plan_status: 'none', storage_mode: 'our_db', gdrive_email: '', role: 'doctor' };
+      }
+      if (active.role === 'admin') {
+        return { plan: 'premium', requested_plan: '', plan_status: 'approved', storage_mode: 'our_db', gdrive_email: '', role: 'admin' };
+      }
+      const localUsers = getLS('el_hostinger_doctors', []);
+      const found = localUsers.find(u => u.mobile_number === active.mobile_number);
+      if (found) {
+        active.plan = (found.plan === 'premium') ? 'premium' : 'free';
+        active.requested_plan = found.requested_plan !== undefined ? found.requested_plan : (active.requested_plan || '');
+        active.plan_status = found.plan_status || active.plan_status || 'none';
+        active.storage_mode = (found.storage_mode === 'gdrive') ? 'gdrive' : (active.storage_mode || 'our_db');
+        active.gdrive_email = found.gdrive_email !== undefined ? found.gdrive_email : (active.gdrive_email || '');
+        setLS('el_active_doctor', active);
+      }
+      return {
+        plan: (active.plan === 'premium') ? 'premium' : 'free',
+        requested_plan: active.requested_plan || '',
+        plan_status: active.plan_status || 'none',
+        storage_mode: (active.storage_mode === 'gdrive') ? 'gdrive' : 'our_db',
+        gdrive_email: active.gdrive_email || '',
+        role: active.role || 'doctor'
+      };
+    }
+
+    function updatePlanUI() {
+      const info = getCurrentUserPlanInfo();
+      const plan = info.plan; // 'free' or 'premium'
+      const reqPlan = info.requested_plan;
+      const reqStatus = info.plan_status; // 'none', 'pending', 'approved', 'rejected'
+      const storageMode = info.storage_mode; // 'gdrive' or 'our_db'
+
+      // 1. Show/hide the Premium Cloud Storage section in Settings
+      const premSec = document.getElementById('premiumCloudSection');
+      if (premSec) premSec.style.display = (plan === 'premium') ? 'block' : 'none';
+
+      // 2. Inside Premium Cloud Storage, toggle between Option 1 (Google Drive) and Option 2 (Our DB)
+      const btnOptGd = document.getElementById('btnOptGdrive');
+      const btnOptDb = document.getElementById('btnOptOurDb');
+      const badgeGd = document.getElementById('badgeOptGdrive');
+      const badgeDb = document.getElementById('badgeOptOurDb');
+      const panelGd = document.getElementById('gdriveStorageSubPanel');
+      const panelDb = document.getElementById('ourDbStorageSubPanel');
+
+      if (btnOptGd && btnOptDb) {
+        btnOptGd.classList.toggle('selected-gdrive', storageMode === 'gdrive');
+        btnOptDb.classList.toggle('selected-ourdb', storageMode === 'our_db');
+      }
+      if (badgeGd) {
+        badgeGd.textContent = (storageMode === 'gdrive') ? 'Selected ✓' : 'Select';
+        badgeGd.style.background = (storageMode === 'gdrive') ? '#0284c7' : '#e0f2fe';
+        badgeGd.style.color = (storageMode === 'gdrive') ? '#fff' : '#0369a1';
+      }
+      if (badgeDb) {
+        badgeDb.textContent = (storageMode === 'our_db') ? 'Selected ✓' : 'Select';
+        badgeDb.style.background = (storageMode === 'our_db') ? '#7c3aed' : '#ede9fe';
+        badgeDb.style.color = (storageMode === 'our_db') ? '#fff' : '#6d28d9';
+      }
+      if (panelGd) panelGd.style.display = (plan === 'premium' && storageMode === 'gdrive') ? 'block' : 'none';
+      if (panelDb) panelDb.style.display = (plan === 'premium' && storageMode === 'our_db') ? 'block' : 'none';
+
+      // Update Google Drive Connected Account status inside Panel B
+      const gdStatusEl = document.getElementById('gdriveConnectedStatus');
+      const gdBtnLbl = document.getElementById('btnGdriveLoginLabel');
+      if (gdStatusEl) {
+        if (info.gdrive_email) {
+          gdStatusEl.innerHTML = `<span style="color:#15803d;font-weight:700"><i class="fa-solid fa-circle-check"></i> Signed in to Google Drive as: <b>${info.gdrive_email}</b></span> — Cases &amp; OT sheets store on your personal Drive.`;
+          if (gdBtnLbl) gdBtnLbl.textContent = 'Switch Google Account';
+        } else {
+          gdStatusEl.innerHTML = `<span style="color:#b45309;font-weight:700"><i class="fa-solid fa-triangle-exclamation"></i> Not signed in to Google Drive yet.</span> Tap <b>Sign in with Google Drive</b> above to connect your account.`;
+          if (gdBtnLbl) gdBtnLbl.textContent = 'Sign in with Google Drive';
+        }
+      }
+
+      // 3. Toggle Ledger Cloud buttons based on active plan & selected storage mode
+      const btnPullDrive = document.getElementById('btnLedgerPullDrive');
+      const btnPushDrive = document.getElementById('btnLedgerPushDrive');
+      const btnPremSync = document.getElementById('btnLedgerPremiumSync');
+      if (btnPullDrive) btnPullDrive.style.display = (plan === 'premium' && storageMode === 'gdrive') ? 'inline-block' : 'none';
+      if (btnPushDrive) btnPushDrive.style.display = (plan === 'premium' && storageMode === 'gdrive') ? 'inline-block' : 'none';
+      if (btnPremSync) btnPremSync.style.display = (plan === 'premium' && storageMode === 'our_db') ? 'inline-block' : 'none';
+
+      // 4. Update Plan Cards & Badge in Settings
+      const badge = document.getElementById('currentPlanBadge');
+      if (badge) {
+        if (plan === 'premium') {
+          const modeTxt = (storageMode === 'gdrive') ? 'Google Drive' : 'Our Database';
+          badge.textContent = `PREMIUM PLAN (${modeTxt})`;
+          badge.style.background = '#ede9fe';
+          badge.style.color = '#6d28d9';
+          badge.style.borderColor = '#ddd6fe';
+        } else {
+          badge.textContent = 'FREE PLAN (Local Storage)';
+          badge.style.background = '#f1f5f9';
+          badge.style.color = '#334155';
+          badge.style.borderColor = '#cbd5e1';
+        }
+      }
+
+      const cardFree = document.getElementById('planCardFree');
+      const cardPrem = document.getElementById('planCardPremium');
+      if (cardFree) cardFree.classList.toggle('active-plan', plan === 'free');
+      if (cardPrem) cardPrem.classList.toggle('active-plan', plan === 'premium');
+
+      const btnFree = document.getElementById('btnSelectFree');
+      const btnPrem = document.getElementById('btnBuyPremium');
+
+      if (btnFree) {
+        btnFree.textContent = (plan === 'free') ? 'Active Plan (Local Only)' : 'Included';
+      }
+      if (btnPrem) {
+        if (plan === 'premium') {
+          btnPrem.innerHTML = '<i class="fa-solid fa-circle-check"></i> Premium Plan Active';
+          btnPrem.disabled = true;
+          btnPrem.style.background = '#059669';
+        } else if (reqStatus === 'pending') {
+          btnPrem.innerHTML = '<i class="fa-solid fa-clock"></i> Approval Pending...';
+          btnPrem.disabled = true;
+          btnPrem.style.background = '#d97706';
+        } else {
+          btnPrem.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Buy / Request Premium Plan';
+          btnPrem.disabled = false;
+          btnPrem.style.background = '#7c3aed';
+        }
+      }
+
+      // 5. Request Status Banner (Pending / Approved / Rejected)
+      const banner = document.getElementById('userPlanRequestBanner');
+      if (banner) {
+        if (reqStatus === 'pending' && plan !== 'premium') {
+          banner.style.display = 'block';
+          banner.style.background = '#fffbeb';
+          banner.style.borderColor = '#fde68a';
+          banner.innerHTML = `<span style="color:#b45309;font-weight:700"><i class="fa-solid fa-hourglass-half"></i> Your request for the <b>PREMIUM PLAN</b> has been sent to the Admin and is awaiting approval.</span>`;
+        } else if (reqStatus === 'rejected' && plan !== 'premium') {
+          banner.style.display = 'block';
+          banner.style.background = '#fef2f2';
+          banner.style.borderColor = '#fecaca';
+          banner.innerHTML = `<span style="color:#dc2626;font-weight:700"><i class="fa-solid fa-circle-xmark"></i> Your Premium Plan request was <b>Rejected by Admin</b>. You can submit a new request below.</span>`;
+        } else if (plan === 'premium') {
+          banner.style.display = 'block';
+          banner.style.background = '#f0fdf4';
+          banner.style.borderColor = '#bbf7d0';
+          banner.innerHTML = `<span style="color:#15803d;font-weight:700"><i class="fa-solid fa-circle-check"></i> <b>PREMIUM PLAN ACTIVE!</b> Choose between <b>Google Drive</b> or <b>Our Database</b> in Section 3 below.</span>`;
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+
+      updateHeaderBadge();
+    }
+
+    async function selectPremiumStorageMode(mode) {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium') {
+        return uiAlert('Please upgrade to the Premium Plan first to select a cloud storage option.');
+      }
+      const active = getLS('el_active_doctor', null);
+      if (!active) return;
+
+      if (mode === 'gdrive') {
+        // When Google Drive is selected, if user hasn't signed in to Drive yet, prompt Google Drive Login modal!
+        active.storage_mode = 'gdrive';
+        setLS('el_active_doctor', active);
+        let localUsers = getLS('el_hostinger_doctors', []);
+        const idx = localUsers.findIndex(u => u.mobile_number === active.mobile_number);
+        if (idx > -1) {
+          localUsers[idx].storage_mode = 'gdrive';
+          setLS('el_hostinger_doctors', localUsers);
+        }
+        updatePlanUI();
+        renderLedger();
+
+        if (!info.gdrive_email) {
+          openGdriveLoginModal();
+        } else {
+          await callHostingerApi({
+            action: 'set_storage_mode',
+            mobile_number: active.mobile_number,
+            storage_mode: 'gdrive',
+            gdrive_email: info.gdrive_email
+          });
+          showToast(`Google Drive Storage selected (${info.gdrive_email})!`);
+        }
+      } else {
+        // When "Our Database" is selected, immediately store & sync data on our database!
+        active.storage_mode = 'our_db';
+        setLS('el_active_doctor', active);
+        let localUsers = getLS('el_hostinger_doctors', []);
+        const idx = localUsers.findIndex(u => u.mobile_number === active.mobile_number);
+        if (idx > -1) {
+          localUsers[idx].storage_mode = 'our_db';
+          setLS('el_hostinger_doctors', localUsers);
+        }
+        updatePlanUI();
+        renderLedger();
+
+        await callHostingerApi({
+          action: 'set_storage_mode',
+          mobile_number: active.mobile_number,
+          storage_mode: 'our_db',
+          gdrive_email: info.gdrive_email || ''
+        });
+        await syncHostingerDatabase(false);
+      }
+    }
+
+    function openGdriveLoginModal() {
+      const info = getCurrentUserPlanInfo();
+      const emailEl = document.getElementById('gdEmailInput');
+      const urlEl = document.getElementById('gdModalScriptUrl');
+      if (emailEl) emailEl.value = info.gdrive_email || '';
+      if (urlEl) urlEl.value = safeGetRaw('el_url') || safeGetRaw('etherlog_script_url') || '';
+      document.getElementById('gdriveLoginModal').style.display = 'flex';
+      setTimeout(() => { if (emailEl) emailEl.focus(); }, 60);
+    }
+
+    function closeGdriveLoginModal() {
+      document.getElementById('gdriveLoginModal').style.display = 'none';
+    }
+
+    async function confirmGdriveLogin() {
+      const email = (document.getElementById('gdEmailInput').value || '').trim();
+      const scriptUrl = (document.getElementById('gdModalScriptUrl').value || '').trim();
+
+      if (!email || !email.includes('@')) {
+        showToast('Please enter a valid Google Account email address (e.g. doctor@gmail.com).', true);
+        return;
+      }
+
+      if (scriptUrl) {
+        safeSetRaw('el_url', scriptUrl);
+        safeSetRaw('etherlog_script_url', scriptUrl);
+        const sUrlEl = document.getElementById('sUrl');
+        if (sUrlEl) sUrlEl.value = scriptUrl;
+      }
+
+      const active = getLS('el_active_doctor', null);
+      if (active) {
+        active.storage_mode = 'gdrive';
+        active.gdrive_email = email;
+        setLS('el_active_doctor', active);
+
+        let localUsers = getLS('el_hostinger_doctors', []);
+        const idx = localUsers.findIndex(u => u.mobile_number === active.mobile_number);
+        if (idx > -1) {
+          localUsers[idx].storage_mode = 'gdrive';
+          localUsers[idx].gdrive_email = email;
+          setLS('el_hostinger_doctors', localUsers);
+        }
+
+        await callHostingerApi({
+          action: 'set_storage_mode',
+          mobile_number: active.mobile_number,
+          storage_mode: 'gdrive',
+          gdrive_email: email
+        });
+      }
+
+      closeGdriveLoginModal();
+      updatePlanUI();
+      renderLedger();
+      checkUploadStatus();
+
+      if (scriptUrl) {
+        pushDatabaseToDrive(true);
+      }
+      showToast(`Signed in to Google Drive (${email})! Your data will now store on your Drive.`);
+    }
+
+    async function requestPlanUpgrade(targetPlan = 'premium') {
+      const active = getLS('el_active_doctor', null);
+      if (!active || !active.mobile_number) {
+        return uiAlert('Please sign in first to request the Premium Plan.');
+      }
+      const ok = await uiConfirm(
+        `Send a request to the Admin to activate the Premium Plan (unlocking Google Drive & Our Cloud Database storage) for your account (${active.mobile_number})?`,
+        `Request PREMIUM Plan`
+      );
+      if (!ok) return;
+
+      let localUsers = getLS('el_hostinger_doctors', []);
+      const idx = localUsers.findIndex(u => u.mobile_number === active.mobile_number);
+      if (idx > -1) {
+        localUsers[idx].requested_plan = 'premium';
+        localUsers[idx].plan_status = 'pending';
+        setLS('el_hostinger_doctors', localUsers);
+      }
+      active.requested_plan = 'premium';
+      active.plan_status = 'pending';
+      setLS('el_active_doctor', active);
+
+      await callHostingerApi({
+        action: 'request_plan',
+        mobile_number: active.mobile_number,
+        requested_plan: 'premium'
+      });
+
+      updatePlanUI();
+      showToast('Upgrade request for PREMIUM Plan sent to Admin!');
+    }
+
+    async function refreshMyPlanFromServer() {
+      const active = getLS('el_active_doctor', null);
+      if (!active || !active.mobile_number) return;
+
+      const apiRes = await callHostingerApi({
+        action: 'check_plan_status',
+        mobile_number: active.mobile_number
+      });
+
+      if (apiRes.reachable && apiRes.data && apiRes.data.status === 'success') {
+        active.plan = (apiRes.data.plan === 'premium') ? 'premium' : 'free';
+        active.requested_plan = apiRes.data.requested_plan || '';
+        active.plan_status = apiRes.data.plan_status || 'none';
+        active.storage_mode = (apiRes.data.storage_mode === 'gdrive') ? 'gdrive' : (active.storage_mode || 'our_db');
+        active.gdrive_email = apiRes.data.gdrive_email || active.gdrive_email || '';
+        setLS('el_active_doctor', active);
+
+        let localUsers = getLS('el_hostinger_doctors', []);
+        const idx = localUsers.findIndex(u => u.mobile_number === active.mobile_number);
+        if (idx > -1) {
+          localUsers[idx].plan = active.plan;
+          localUsers[idx].requested_plan = active.requested_plan;
+          localUsers[idx].plan_status = active.plan_status;
+          localUsers[idx].storage_mode = active.storage_mode;
+          localUsers[idx].gdrive_email = active.gdrive_email;
+          setLS('el_hostinger_doctors', localUsers);
+        }
+        if (active.plan === 'premium' && active.storage_mode === 'our_db' && Array.isArray(apiRes.data.cases) && apiRes.data.cases.length > 0) {
+          setLS('el_cases', apiRes.data.cases);
+          setLS(`el_cases_${active.mobile_number}`, apiRes.data.cases);
+        }
+      }
+      updatePlanUI();
+      const info = getCurrentUserPlanInfo();
+      showToast(`Current Plan: ${info.plan.toUpperCase()} (${info.plan_status === 'pending' ? 'Pending Admin Approval' : 'Up to date'})`);
+    }
+
+    function handleHeaderStorageBadgeClick() {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan === 'premium') {
+        if (info.storage_mode === 'gdrive') {
+          if (!info.gdrive_email) openGdriveLoginModal();
+          else pullDatabaseFromDrive(false);
+        } else {
+          syncPremiumCloudNow();
+        }
+      } else {
+        showTab('tabSettings');
+        const el = document.getElementById('planSubscriptionCard');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        showToast('Free Plan uses local storage. Request the Premium Plan below to unlock Google Drive or Our Cloud Database!');
+      }
+    }
+
+    // =========================================================================
+    // AUTHENTICATION & ADMIN ROLE SEPARATION
+    // Default Admin Login: ID/Mobile = "admin" or "9999999999", Pass = "Admin@123"
+    // =========================================================================
+    function getAdminConfig() {
+      const cfg = getLS('el_admin_config', null);
+      if (cfg && cfg.user && cfg.passHash) return cfg;
+      return {
+        user: 'admin',
+        altMobile: '9999999999',
+        passHash: simpleHash('Admin@123')
+      };
+    }
+
+    function isCurrentUserAdmin() {
+      const active = getLS('el_active_doctor', null);
+      return Boolean(active && active.role === 'admin');
+    }
+
+    function updateAdminVisibility() {
+      const isAdmin = isCurrentUserAdmin();
+      const adminPanel = document.getElementById('adminDbPanel');
+      const adminBadge = document.getElementById('hdrAdminBadge');
+      if (adminPanel) adminPanel.style.display = isAdmin ? 'block' : 'none';
+      if (adminBadge) adminBadge.style.display = isAdmin ? 'inline-flex' : 'none';
+      if (isAdmin) {
+        const cfg = getAdminConfig();
+        const uEl = document.getElementById('admNewUser');
+        if (uEl && !uEl.value) uEl.value = cfg.user || 'admin';
+        refreshAdminDoctorsList();
+      }
+      updatePlanUI();
+    }
+
+    function openAdminDbSection() {
+      if (!isCurrentUserAdmin()) return;
+      showTab('tabSettings');
+      const panel = document.getElementById('adminDbPanel');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function normalizeMobile(mob) {
+      const raw = String(mob || '').trim().toLowerCase();
+      if (raw === 'admin') return 'admin';
+      let digits = raw.replace(/[^0-9]/g, '');
+      if (digits.length === 12 && digits.startsWith('91')) {
+        digits = digits.slice(2);
+      }
+      return digits || raw;
+    }
+
+    function simpleHash(str) {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return 'h_' + (h >>> 0).toString(16);
+    }
+
+    function getHostingerApiUrl() {
+      const sInput = document.getElementById('sHostingerUrl');
+      const saved = (safeGetRaw('el_hostinger_api_url') || '').trim();
+      if (sInput && sInput.value.trim()) return sInput.value.trim();
+      return saved || 'api.php';
+    }
+
+    function saveHostingerApiUrl(val) {
+      const clean = (val || '').trim() || 'api.php';
+      safeSetRaw('el_hostinger_api_url', clean);
+    }
+
+    function togglePassVisibility(inputId, btnId) {
+      const inp = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      if (!inp || !btn) return;
+      if (inp.type === 'password') {
+        inp.type = 'text';
+        btn.innerHTML = '<i class="fa-regular fa-eye-slash"></i>';
+      } else {
+        inp.type = 'password';
+        btn.innerHTML = '<i class="fa-regular fa-eye"></i>';
+      }
+    }
+
+    function setAuthMessage(text, type = 'info') {
+      const el = document.getElementById('authStatusMsg');
+      if (!el) return;
+      if (!text) {
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+      }
+      el.className = `auth-msg ${type}`;
+      el.innerHTML = text;
+      el.style.display = 'block';
+    }
+
+    function switchAuthTab(tab) {
+      const isSignIn = (tab === 'signin');
+      document.getElementById('tabBtnSignIn').classList.toggle('active', isSignIn);
+      document.getElementById('tabBtnSignUp').classList.toggle('active', !isSignIn);
+      document.getElementById('authSignInPanel').style.display = isSignIn ? 'block' : 'none';
+      document.getElementById('authSignUpPanel').style.display = isSignIn ? 'none' : 'block';
+      setAuthMessage('');
+    }
+
+    async function callHostingerApi(payload) {
+      const endpoint = getHostingerApiUrl();
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const text = await res.text();
+        let data = null;
+        try { data = JSON.parse(text); } catch (e) {}
+        if (data && typeof data === 'object') {
+          return { reachable: true, httpOk: res.ok, data };
+        }
+        return { reachable: false, error: 'Invalid JSON response' };
+      } catch (err) {
+        return { reachable: false, error: err.message || 'Server unreachable' };
+      }
+    }
+
+    async function handleSignUp() {
+      const docName = (document.getElementById('suDocName').value || '').trim();
+      const rawMob = (document.getElementById('suMobile').value || '').trim();
+      const mobile = normalizeMobile(rawMob);
+      const pass = document.getElementById('suPassword').value || '';
+      const confirmPass = document.getElementById('suConfirmPass').value || '';
+
+      if (!docName) {
+        setAuthMessage('<i class="fa-solid fa-circle-exclamation"></i> Please enter the <b>Doctor Name</b>.', 'err');
+        return;
+      }
+      const admCfg = getAdminConfig();
+      if (mobile === 'admin' || mobile === admCfg.user.toLowerCase() || mobile === admCfg.altMobile) {
+        setAuthMessage('<i class="fa-solid fa-circle-exclamation"></i> This mobile/ID is reserved for the Administrator.', 'err');
+        return;
+      }
+      if (!/^\d{10,15}$/.test(mobile)) {
+        setAuthMessage('<i class="fa-solid fa-circle-exclamation"></i> Please enter a valid <b>10-digit Mobile Number</b>.', 'err');
+        return;
+      }
+      if (pass.length < 4) {
+        setAuthMessage('<i class="fa-solid fa-circle-exclamation"></i> Password must be at least <b>4 characters</b>.', 'err');
+        return;
+      }
+      if (pass !== confirmPass) {
+        setAuthMessage('<i class="fa-solid fa-circle-exclamation"></i> Passwords do not match. Please re-check.', 'err');
+        return;
+      }
+
+      const btn = document.getElementById('btnSignUp');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating Account...';
+
+      const apiRes = await callHostingerApi({
+        action: 'signup',
+        doctor_name: docName,
+        mobile_number: mobile,
+        password: pass
+      });
+
+      let localUsers = getLS('el_hostinger_doctors', []);
+      const existingLocalIdx = localUsers.findIndex(u => u.mobile_number === mobile);
+
+      if (apiRes.reachable && apiRes.data) {
+        if (apiRes.data.status === 'error') {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-user-check"></i> Sign Up';
+          setAuthMessage(`<i class="fa-solid fa-circle-xmark"></i> ${apiRes.data.message || 'Sign Up failed.'}`, 'err');
+          return;
+        }
+      } else {
+        if (existingLocalIdx > -1) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-user-check"></i> Sign Up';
+          setAuthMessage(`<i class="fa-solid fa-circle-exclamation"></i> Mobile number <b>${mobile}</b> is already registered. Please Sign In.`, 'err');
+          return;
+        }
+      }
+
+      const newDocRecord = {
+        id: (apiRes.reachable && apiRes.data && apiRes.data.doctor) ? apiRes.data.doctor.id : Date.now(),
+        doctor_name: docName,
+        mobile_number: mobile,
+        password_hash: simpleHash(pass),
+        role: 'doctor',
+        plan: 'free',
+        requested_plan: '',
+        plan_status: 'none',
+        storage_mode: 'our_db',
+        gdrive_email: '',
+        profile: {
+          name: docName,
+          mobile: mobile,
+          dob: '',
+          reg: '',
+          qual: '',
+          desig: '',
+          council: '',
+          addr: '',
+          country: 'India'
+        },
+        cases: [],
+        createdAt: new Date().toISOString()
+      };
+
+      if (existingLocalIdx > -1) localUsers[existingLocalIdx] = newDocRecord;
+      else localUsers.push(newDocRecord);
+      setLS('el_hostinger_doctors', localUsers);
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-user-check"></i> Sign Up';
+
+      document.getElementById('suDocName').value = '';
+      document.getElementById('suMobile').value = '';
+      document.getElementById('suPassword').value = '';
+      document.getElementById('suConfirmPass').value = '';
+
+      switchAuthTab('signin');
+      document.getElementById('siMobile').value = mobile;
+      document.getElementById('siPassword').value = '';
+      document.getElementById('siPassword').focus();
+
+      setAuthMessage(
+        `<i class="fa-solid fa-circle-check"></i> Registration successful for <b>${docName}</b> (Free Plan active)! Please enter your password below to <b>Sign In</b>.`,
+        'ok'
+      );
+      showToast(`Account created for ${docName}! Please Sign In.`);
+    }
+
+    async function handleSignIn() {
+      const rawMob = (document.getElementById('siMobile').value || '').trim();
+      const mobile = normalizeMobile(rawMob);
+      const pass = document.getElementById('siPassword').value || '';
+
+      if (!mobile) {
+        setAuthMessage('<i class="fa-solid fa-circle-exclamation"></i> Please enter your <b>Mobile Number</b>.', 'err');
+        return;
+      }
+      if (!pass) {
+        setAuthMessage('<i class="fa-solid fa-circle-exclamation"></i> Please enter your <b>Password</b>.', 'err');
+        return;
+      }
+
+      const btn = document.getElementById('btnSignIn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing In...';
+
+      // Check local Admin credentials first
+      const admCfg = getAdminConfig();
+      const isLocalAdminMatch = (
+        (mobile === admCfg.user.toLowerCase() || mobile === admCfg.altMobile || mobile === 'admin') &&
+        simpleHash(pass) === admCfg.passHash
+      );
+
+      if (isLocalAdminMatch) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+        completeDoctorLogin({
+          id: 0,
+          doctor_name: 'Administrator',
+          mobile_number: mobile,
+          role: 'admin',
+          plan: 'premium',
+          requested_plan: '',
+          plan_status: 'approved',
+          storage_mode: 'our_db',
+          gdrive_email: '',
+          profile: { name: 'Administrator', mobile: mobile, country: 'India' },
+          cases: getLS('el_cases', [])
+        });
+        return;
+      }
+
+      // Check Hostinger MySQL API (`api.php`)
+      const apiRes = await callHostingerApi({
+        action: 'signin',
+        mobile_number: mobile,
+        password: pass
+      });
+
+      let authenticatedDoctor = null;
+
+      if (apiRes.reachable && apiRes.data) {
+        if (apiRes.data.status === 'success' && apiRes.data.doctor) {
+          authenticatedDoctor = apiRes.data.doctor;
+        } else {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+          setAuthMessage(`<i class="fa-solid fa-circle-xmark"></i> ${apiRes.data.message || 'Invalid mobile number or password.'}`, 'err');
+          return;
+        }
+      } else {
+        const localUsers = getLS('el_hostinger_doctors', []);
+        const found = localUsers.find(u => u.mobile_number === mobile && u.password_hash === simpleHash(pass));
+        if (!found) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+          setAuthMessage('<i class="fa-solid fa-circle-xmark"></i> Invalid Mobile Number or Password. New user? Click <b>Sign Up</b>.', 'err');
+          return;
+        }
+        authenticatedDoctor = found;
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+
+      completeDoctorLogin(authenticatedDoctor);
+    }
+
+    function completeDoctorLogin(docObj) {
+      const role = (docObj.role === 'admin') ? 'admin' : 'doctor';
+      const plan = (docObj.plan === 'premium') ? 'premium' : 'free';
+      const storageMode = (docObj.storage_mode === 'gdrive') ? 'gdrive' : 'our_db';
+      const session = {
+        id: docObj.id || Date.now(),
+        doctor_name: docObj.doctor_name,
+        mobile_number: docObj.mobile_number,
+        role: role,
+        plan: plan,
+        requested_plan: docObj.requested_plan || '',
+        plan_status: docObj.plan_status || 'none',
+        storage_mode: storageMode,
+        gdrive_email: docObj.gdrive_email || '',
+        loggedInAt: new Date().toISOString()
+      };
+      setLS('el_active_doctor', session);
+
+      const curProf = getLS('el_doc_profile', {});
+      const remoteProf = (docObj.profile && typeof docObj.profile === 'object') ? docObj.profile : {};
+      const mergedProfile = {
+        name: docObj.doctor_name || remoteProf.name || curProf.name || '',
+        mobile: docObj.mobile_number || remoteProf.mobile || curProf.mobile || '',
+        dob: remoteProf.dob || curProf.dob || '',
+        reg: remoteProf.reg || curProf.reg || '',
+        qual: remoteProf.qual || curProf.qual || '',
+        desig: remoteProf.desig || curProf.desig || '',
+        council: remoteProf.council || curProf.council || '',
+        addr: remoteProf.addr || curProf.addr || '',
+        country: remoteProf.country || curProf.country || 'India'
+      };
+      setLS('el_doc_profile', mergedProfile);
+
+      if (role !== 'admin') {
+        const perDocKey = `el_cases_${docObj.mobile_number}`;
+        const localDocCases = getLS(perDocKey, null);
+        if (plan === 'premium' && storageMode === 'our_db' && Array.isArray(docObj.cases) && docObj.cases.length > 0) {
+          setLS('el_cases', docObj.cases);
+          setLS(perDocKey, docObj.cases);
+        } else if (Array.isArray(localDocCases)) {
+          setLS('el_cases', localDocCases);
+        } else {
+          setLS('el_cases', []);
+        }
+      }
+
+      loadDocProfile();
+      renderLedger();
+      renderSummary();
+      updateAdminVisibility();
+      updatePlanUI();
+
+      document.getElementById('authOverlay').style.display = 'none';
+      if (role === 'admin') {
+        showTab('tabSettings');
+        showToast('Signed in as Admin — Premium Approvals & Database Panel unlocked.');
+      } else {
+        showTab('tabLogger');
+        showToast(`Welcome, ${mergedProfile.name}! (${plan.toUpperCase()} Plan)`);
+      }
+    }
+
+    function logoutDoctor() {
+      const active = getLS('el_active_doctor', null);
+      if (active && active.mobile_number && active.role !== 'admin') {
+        setLS(`el_cases_${active.mobile_number}`, getLS('el_cases', []));
+      }
+      safeRemoveRaw('el_active_doctor');
+      updateAdminVisibility();
+      document.getElementById('siPassword').value = '';
+      if (active && active.mobile_number) {
+        document.getElementById('siMobile').value = active.mobile_number;
+      }
+      switchAuthTab('signin');
+      setAuthMessage('<i class="fa-solid fa-circle-info"></i> Signed out safely. Enter your mobile number and password to Sign In.', 'info');
+      document.getElementById('authOverlay').style.display = 'flex';
+    }
+
+    // Storage sync for "Our Database" (Only active when Plan === 'premium' AND storage_mode === 'our_db')
+    async function syncHostingerDatabase(silent = true) {
+      const active = getLS('el_active_doctor', null);
+      if (!active || active.role === 'admin') return false;
+      const info = getCurrentUserPlanInfo();
+      const prof = getLS('el_doc_profile', {});
+      const cases = getLS('el_cases', []);
+      const mobile = active.mobile_number;
+
+      // Always keep local device copy for the signed-in doctor
+      if (mobile) {
+        setLS(`el_cases_${mobile}`, cases);
+        let localUsers = getLS('el_hostinger_doctors', []);
+        const idx = localUsers.findIndex(u => u.mobile_number === mobile);
+        if (idx > -1) {
+          localUsers[idx].doctor_name = prof.name || localUsers[idx].doctor_name;
+          localUsers[idx].profile = prof;
+          if (info.plan === 'premium' && info.storage_mode === 'our_db') {
+            localUsers[idx].cases = cases;
+          }
+          setLS('el_hostinger_doctors', localUsers);
+        }
+      }
+
+      if (info.plan !== 'premium' || info.storage_mode !== 'our_db') {
+        if (!silent) {
+          uiAlert('To store cases on Our Cloud Database, ensure your Premium Plan is active and select "2. Our Database" in Settings.', 'Storage Selection');
+        }
+        return false;
+      }
+
+      const apiRes = await callHostingerApi({
+        action: 'sync_data',
+        mobile_number: mobile,
+        storage_mode: 'our_db',
+        doctorProfile: prof,
+        allCases: cases
+      });
+
+      if (!silent) {
+        if (apiRes.reachable && apiRes.data && apiRes.data.status === 'success') {
+          showToast(`Synced ${cases.length} case(s) to Our Cloud Database!`);
+        } else {
+          showToast(`Saved ${cases.length} case(s) to Our Database store!`);
+        }
+      }
+      return Boolean(apiRes.reachable && apiRes.data && apiRes.data.status === 'success');
+    }
+
+    async function syncPremiumCloudNow() {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium' || info.storage_mode !== 'our_db') {
+        return uiAlert('Select "2. Our Database" under Premium Cloud Storage in Settings to store cases on our server.');
+      }
+      await syncHostingerDatabase(false);
+    }
+
+    async function pullPremiumCloudNow() {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium' || info.storage_mode !== 'our_db') {
+        return uiAlert('Select "2. Our Database" under Premium Cloud Storage in Settings to pull cases from our server.');
+      }
+      const active = getLS('el_active_doctor', null);
+      if (!active) return;
+
+      const apiRes = await callHostingerApi({
+        action: 'fetch_data',
+        mobile_number: active.mobile_number
+      });
+
+      if (apiRes.reachable && apiRes.data && Array.isArray(apiRes.data.cases)) {
+        setLS('el_cases', apiRes.data.cases);
+        setLS(`el_cases_${active.mobile_number}`, apiRes.data.cases);
+        renderLedger();
+        renderSummary();
+        showToast(`Pulled ${apiRes.data.cases.length} case(s) from Our Cloud Database!`);
+      } else {
+        const localUsers = getLS('el_hostinger_doctors', []);
+        const found = localUsers.find(u => u.mobile_number === active.mobile_number);
+        const cList = (found && Array.isArray(found.cases)) ? found.cases : getLS(`el_cases_${active.mobile_number}`, []);
+        setLS('el_cases', cList);
+        renderLedger();
+        renderSummary();
+        showToast(`Loaded ${cList.length} case(s) from Our Database store!`);
+      }
+    }
+
+    // =========================================================================
+    // ADMIN-ONLY DATABASE & PLAN APPROVAL FUNCTIONS
+    // =========================================================================
+    async function refreshAdminDoctorsList() {
+      if (!isCurrentUserAdmin()) return;
+      const tbody = document.getElementById('adminDoctorsTableBody');
+      const pendingBox = document.getElementById('adminPendingPlansBox');
+      const statusLbl = document.getElementById('admDbStatusLabel');
+
+      let docsList = getLS('el_hostinger_doctors', []);
+
+      const apiRes = await callHostingerApi({ action: 'admin_list_doctors' });
+      if (apiRes.reachable && apiRes.data && Array.isArray(apiRes.data.doctors)) {
+        docsList = apiRes.data.doctors;
+        if (statusLbl) {
+          statusLbl.textContent = 'MySQL Live';
+          statusLbl.style.color = '#15803d';
+        }
+      } else {
+        if (statusLbl) {
+          statusLbl.textContent = 'Local DB';
+          statusLbl.style.color = '#0284c7';
+        }
+      }
+
+      let totalCasesAll = 0;
+      let pendingRequests = [];
+
+      docsList.forEach(d => {
+        d.plan = (d.plan === 'premium') ? 'premium' : 'free';
+        d.requested_plan = d.requested_plan || '';
+        d.plan_status = d.plan_status || 'none';
+        d.storage_mode = (d.storage_mode === 'gdrive') ? 'gdrive' : 'our_db';
+        const cCount = (d.plan === 'premium' && d.storage_mode === 'our_db')
+          ? ((typeof d.cases_count === 'number') ? d.cases_count : (Array.isArray(d.cases) ? d.cases.length : getLS(`el_cases_${d.mobile_number}`, []).length))
+          : 0;
+        d._computedCases = cCount;
+        totalCasesAll += cCount;
+        if (d.plan_status === 'pending' && d.plan !== 'premium') {
+          pendingRequests.push(d);
+        }
+      });
+
+      document.getElementById('admTotalDocs').textContent = docsList.length;
+      document.getElementById('admPendingReqs').textContent = pendingRequests.length;
+      document.getElementById('admTotalCasesAll').textContent = totalCasesAll;
+
+      // Render Pending Premium Plan Requests Queue
+      if (pendingBox) {
+        if (!pendingRequests.length) {
+          pendingBox.innerHTML = '<div style="color:#64748b;font-size:0.78rem"><i class="fa-solid fa-check-circle" style="color:#10b981"></i> No pending Premium upgrade requests right now.</div>';
+        } else {
+          pendingBox.innerHTML = pendingRequests.map(r => `
+            <div style="background:#fff;border:1px solid #fcd34d;border-radius:8px;padding:9px 11px;margin-top:6px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+              <div>
+                <div style="font-weight:800;color:#0f172a;font-size:0.84rem">${r.doctor_name} <span style="font-weight:600;color:#64748b">(${r.mobile_number})</span></div>
+                <div style="font-size:0.74rem;color:#475569;margin-top:2px">
+                  Current: <b>FREE</b> &rarr; Requested: <span style="background:#ede9fe;color:#6d28d9;padding:1px 6px;border-radius:4px;font-weight:800">PREMIUM PLAN</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button type="button" class="mini-btn" style="background:#16a34a;color:#fff;border:none;padding:5px 10px;font-size:0.74rem" onclick="adminHandlePlanDecision('${r.mobile_number}','approve')">
+                  <i class="fa-solid fa-check"></i> Approve
+                </button>
+                <button type="button" class="mini-btn" style="background:#dc2626;color:#fff;border:none;padding:5px 10px;font-size:0.74rem" onclick="adminHandlePlanDecision('${r.mobile_number}','reject')">
+                  <i class="fa-solid fa-xmark"></i> Reject
+                </button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (!docsList.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#64748b;padding:14px">No doctors registered in database yet.</td></tr>';
+        return;
+      }
+
+      window._adminDocsCache = docsList;
+      tbody.innerHTML = docsList.map(d => {
+        const pColor = d.plan === 'premium' ? '#7c3aed' : '#64748b';
+        let statusHtml = '<span style="color:#94a3b8;font-size:0.7rem">No request</span>';
+        if (d.plan_status === 'pending' && d.plan !== 'premium') {
+          statusHtml = `<span style="background:#fef3c7;color:#b45309;padding:2px 6px;border-radius:4px;font-weight:700;font-size:0.68rem">Pending Premium</span>`;
+        } else if (d.plan_status === 'approved' || d.plan === 'premium') {
+          statusHtml = `<span style="color:#15803d;font-weight:700;font-size:0.7rem"><i class="fa-solid fa-check"></i> Approved</span>`;
+        } else if (d.plan_status === 'rejected') {
+          statusHtml = `<span style="color:#dc2626;font-weight:700;font-size:0.7rem"><i class="fa-solid fa-xmark"></i> Rejected</span>`;
+        }
+
+        let storageCell = '<span style="font-size:0.7rem;color:#64748b">Local Only (Free)</span>';
+        if (d.plan === 'premium') {
+          if (d.storage_mode === 'gdrive') {
+            storageCell = `<span class="mini-btn" style="background:#e0f2fe;color:#0369a1;border-color:#bae6fd"><i class="fa-brands fa-google-drive"></i> User Drive${d.gdrive_email ? ' ('+d.gdrive_email+')' : ''}</span>`;
+          } else {
+            storageCell = `<span class="mini-btn" style="background:#ede9fe;color:#6d28d9;border-color:#ddd6fe"><i class="fa-solid fa-database"></i> Our DB (${d._computedCases} Cases)</span>`;
+          }
+        }
+
+        return `
+          <tr>
+            <td><b>${d.doctor_name || 'N/A'}</b></td>
+            <td><code>${d.mobile_number || ''}</code></td>
+            <td>
+              <select style="padding:3px 6px;font-size:0.72rem;font-weight:700;border-radius:5px;border:1px solid ${pColor};color:${pColor};width:auto" onchange="adminSetDoctorPlan('${d.mobile_number}', this.value)">
+                <option value="free" ${d.plan==='free'?'selected':''}>Free (Local)</option>
+                <option value="premium" ${d.plan==='premium'?'selected':''}>Premium</option>
+              </select>
+            </td>
+            <td>${statusHtml}</td>
+            <td>${storageCell}</td>
+            <td style="white-space:nowrap">
+              ${d.plan_status === 'pending' && d.plan !== 'premium' ? `
+                <button type="button" class="mini-btn" style="background:#16a34a;color:#fff;border:none" onclick="adminHandlePlanDecision('${d.mobile_number}','approve')" title="Approve Premium"><i class="fa-solid fa-check"></i></button>
+                <button type="button" class="mini-btn" style="background:#dc2626;color:#fff;border:none" onclick="adminHandlePlanDecision('${d.mobile_number}','reject')" title="Reject Premium"><i class="fa-solid fa-xmark"></i></button>
+              ` : ''}
+              ${d.plan === 'premium' && d.storage_mode === 'our_db' ? `<button type="button" class="mini-btn" onclick="adminInspectDoctor('${d.mobile_number}')" title="View Our DB Cases"><i class="fa-solid fa-eye"></i></button>` : ''}
+              <button type="button" class="mini-btn" style="background:#fef3c7;color:#b45309;border-color:#fde68a" onclick="adminResetDoctorPassword('${d.mobile_number}','${(d.doctor_name||'').replace(/'/g,'')}')" title="Reset Password"><i class="fa-solid fa-key"></i></button>
+              <button type="button" class="mini-btn" style="background:#fee2e2;color:#dc2626;border-color:#fecaca" onclick="adminDeleteDoctor('${d.mobile_number}','${(d.doctor_name||'').replace(/'/g,'')}')" title="Delete Doctor"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function adminHandlePlanDecision(mobile, decision) {
+      if (!isCurrentUserAdmin()) return;
+      let localUsers = getLS('el_hostinger_doctors', []);
+      const idx = localUsers.findIndex(u => u.mobile_number === mobile);
+      if (idx > -1) {
+        if (decision === 'approve') {
+          localUsers[idx].plan = 'premium';
+          localUsers[idx].requested_plan = '';
+          localUsers[idx].plan_status = 'approved';
+          if (!localUsers[idx].storage_mode) localUsers[idx].storage_mode = 'our_db';
+          const existingLocalCases = getLS(`el_cases_${mobile}`, []);
+          if (localUsers[idx].storage_mode === 'our_db' && existingLocalCases.length > 0 && (!localUsers[idx].cases || !localUsers[idx].cases.length)) {
+            localUsers[idx].cases = existingLocalCases;
+          }
+        } else {
+          localUsers[idx].plan_status = 'rejected';
+        }
+        setLS('el_hostinger_doctors', localUsers);
+      }
+
+      await callHostingerApi({
+        action: 'admin_handle_plan',
+        target_mobile: mobile,
+        decision: decision,
+        plan: 'premium'
+      });
+
+      refreshAdminDoctorsList();
+      showToast(decision === 'approve' ? `Approved PREMIUM Plan for ${mobile}!` : `Rejected Premium request for ${mobile}.`);
+    }
+
+    async function adminSetDoctorPlan(mobile, newPlan) {
+      if (!isCurrentUserAdmin()) return;
+      const cleanPlan = (newPlan === 'premium') ? 'premium' : 'free';
+      let localUsers = getLS('el_hostinger_doctors', []);
+      const idx = localUsers.findIndex(u => u.mobile_number === mobile);
+      if (idx > -1) {
+        localUsers[idx].plan = cleanPlan;
+        localUsers[idx].requested_plan = '';
+        localUsers[idx].plan_status = 'approved';
+        setLS('el_hostinger_doctors', localUsers);
+      }
+
+      await callHostingerApi({
+        action: 'admin_handle_plan',
+        target_mobile: mobile,
+        decision: 'set_plan',
+        plan: cleanPlan
+      });
+
+      refreshAdminDoctorsList();
+      showToast(`Updated ${mobile} to ${cleanPlan.toUpperCase()} Plan.`);
+    }
+
+    function adminInspectDoctor(mobile) {
+      if (!isCurrentUserAdmin()) return;
+      const list = window._adminDocsCache || getLS('el_hostinger_doctors', []);
+      const doc = list.find(d => d.mobile_number === mobile);
+      if (!doc) return;
+      const docCases = Array.isArray(doc.cases) && doc.cases.length ? doc.cases : getLS(`el_cases_${mobile}`, []);
+      setLS('el_cases', docCases);
+      renderLedger();
+      renderSummary();
+      showTab('tabLedger');
+      showToast(`Admin viewing ${docCases.length} Our DB case(s) of ${doc.doctor_name} (${mobile})`);
+    }
+
+    async function adminResetDoctorPassword(mobile, name) {
+      if (!isCurrentUserAdmin()) return;
+      const newPass = await uiPrompt(`Enter new password for ${name} (${mobile}):`, '', 'Admin Reset Password');
+      if (!newPass || newPass.trim().length < 4) {
+        if (newPass !== null) showToast('Password must be at least 4 characters.', true);
+        return;
+      }
+      const cleanPass = newPass.trim();
+      let localUsers = getLS('el_hostinger_doctors', []);
+      const idx = localUsers.findIndex(u => u.mobile_number === mobile);
+      if (idx > -1) {
+        localUsers[idx].password_hash = simpleHash(cleanPass);
+        setLS('el_hostinger_doctors', localUsers);
+      }
+      await callHostingerApi({
+        action: 'admin_reset_password',
+        target_mobile: mobile,
+        new_password: cleanPass
+      });
+      showToast(`Password updated for ${name} (${mobile}).`);
+    }
+
+    async function adminDeleteDoctor(mobile, name) {
+      if (!isCurrentUserAdmin()) return;
+      const ok = await uiConfirm(`Delete doctor account "${name}" (${mobile}) from the database?`, 'Admin Delete User');
+      if (!ok) return;
+      let localUsers = getLS('el_hostinger_doctors', []).filter(u => u.mobile_number !== mobile);
+      setLS('el_hostinger_doctors', localUsers);
+      safeRemoveRaw(`el_cases_${mobile}`);
+      await callHostingerApi({
+        action: 'admin_delete_doctor',
+        target_mobile: mobile
+      });
+      refreshAdminDoctorsList();
+      showToast(`Deleted doctor ${name} (${mobile}).`);
+    }
+
+    function saveAdminCredentials() {
+      if (!isCurrentUserAdmin()) return;
+      const newU = (document.getElementById('admNewUser').value || '').trim() || 'admin';
+      const newP = (document.getElementById('admNewPass').value || '').trim();
+      if (newP.length < 4) {
+        uiAlert('Please enter an Admin password of at least 4 characters.', 'Admin Security');
+        return;
+      }
+      setLS('el_admin_config', {
+        user: newU,
+        altMobile: '9999999999',
+        passHash: simpleHash(newP)
+      });
+      document.getElementById('admNewPass').value = '';
+      showToast(`Admin credentials updated! ID: ${newU}`);
+    }
+
+    function exportAllDoctorsAdminCSV() {
+      if (!isCurrentUserAdmin()) return;
+      const list = window._adminDocsCache || getLS('el_hostinger_doctors', []);
+      if (!list.length) return uiAlert('No registered doctors to export.');
+      const q = v => `"${String(v || '').replace(/"/g, '""')}"`;
+      let csv = "\uFEFFDoctor_ID,Doctor_Name,Mobile_Number,Active_Plan,Plan_Status,Storage_Mode,Google_Drive_Email,Our_DB_Cases,Created_At\n";
+      list.forEach((d, i) => {
+        csv += [
+          d.id || (i + 1),
+          d.doctor_name || '',
+          d.mobile_number || '',
+          d.plan || 'free',
+          d.plan_status || 'none',
+          d.storage_mode || 'our_db',
+          d.gdrive_email || '',
+          d._computedCases || 0,
+          d.created_at || d.createdAt || ''
+        ].map(q).join(',') + "\n";
+      });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+      a.download = `Admin_Doctors_Database_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    async function testHostingerConnection() {
+      if (!isCurrentUserAdmin()) return;
+      const box = document.getElementById('hostingerTestStatus');
+      if (box) {
+        box.style.display = 'block';
+        box.innerHTML = '<span style="color:#0284c7;font-weight:700"><i class="fa-solid fa-spinner fa-spin"></i> Checking Hostinger MySQL API connection...</span>';
+      }
+      const res = await callHostingerApi({ action: 'test_connection' });
+      if (res.reachable && res.data && res.data.status === 'success') {
+        const msg = `Connected to Hostinger MySQL! Total Doctors in DB: ${res.data.registeredDocs ?? 0}`;
+        showToast(msg);
+        if (box) box.innerHTML = `<span style="color:#15803d;font-weight:700"><i class="fa-solid fa-circle-check"></i> ${msg}</span>`;
+      } else {
+        const errTxt = (res.data && res.data.message) ? res.data.message : 'Hostinger api.php not detected on this domain yet (currently storing accounts in local database cache). Upload index.html and api.php to your Hostinger public_html folder.';
+        if (box) box.innerHTML = `<span style="color:#b45309;font-weight:700"><i class="fa-solid fa-circle-info"></i> ${errTxt}</span>`;
+      }
+    }
+
+    // =========================================================================
+    // CORE LOGBOOK DATA & FUNCTIONS
+    // =========================================================================
+    let curLinks = [];
+
+    const HOSPS = [
+      "Government Medical College Hospital, Nilgiris",
+      "Government Headquarters Hospital"
+    ];
+
+    const SPECS = [
+      "General Surgery",
+      "Orthopaedics",
+      "Obstetrics & Gynaec",
+      "ENT",
+      "Urology",
+      "Paediatrics",
+      "Neuro/Spine",
+      "Plastic Surgery",
+      "Ophthalmology",
+      "Cardiothoracic",
+      "Emergency/Trauma",
+      "Oncology / Oncosurgery",
+      "Vascular Surgery",
+      "Maxillofacial / Dental"
+    ];
+
+    const SPEC_PROC_MAP = {
+      "General Surgery": ["Laparoscopic Appendicectomy","Open Appendicectomy","Laparoscopic Cholecystectomy","Exploratory Laparotomy","Inguinal Hernia Repair","Incisional Hernia Repair","Total Thyroidectomy","Hemithyroidectomy","Modified Radical Mastectomy (MRM)","Excision of Fibroadenoma","Haemorrhoidectomy","Fistula in Ano Excision","Perianal Abscess Drainage","Perforation Closure","Splenectomy"],
+      "Orthopaedics": ["Total Knee Arthroplasty (TKA)","Total Hip Arthroplasty (THA)","DHS / PFN Femur Fixation","ORIF Both Bones Forearm","ORIF Tibia / Fibula","Hemiarthroplasty Hip","Tension Band Wiring (TBW) Patella / Olecranon","Implant Removal","Carpal Tunnel Release","Arthroscopic ACL Reconstruction","External Fixator Application"],
+      "Obstetrics & Gynaec": ["Elective LSCS","Emergency LSCS","Total Abdominal Hysterectomy (TAH)","Total Laparoscopic Hysterectomy (TLH)","Vaginal Hysterectomy (VH / PFR)","Laparoscopic Ovarian Cystectomy","Salpingectomy for Ectopic","Dilatation & Curettage (D&C)","Suction Evacuation","Cervical Encirclage"],
+      "ENT": ["Tonsillectomy","Adenoidectomy","Functional Endoscopic Sinus Surgery (FESS)","Tympanoplasty / Mastoidectomy","Septoplasty / SMR","Microlaryngeal Surgery (MLS)","Tracheostomy","Preauricular Sinus Excision"],
+      "Urology": ["Transurethral Resection of Prostate (TURP)","Ureteroscopic Lithotripsy (URSL)","Percutaneous Nephrolithotomy (PCNL)","DJ Stenting / Stent Removal","Cystoscopy & Biopsy","Optical Internal Urethrotomy (OIU)","Radical / Simple Nephrectomy","Varicocelectomy","Hydrocele Surgery"],
+      "Paediatrics": ["Herniotomy","Circumcision","Orchiopexy","Pyloromyotomy","Colostomy Closure","Intussusception Reduction","Foreign Body Bronchus Removal"],
+      "Neuro/Spine": ["Craniotomy for EDH / SDH / Tumor","Burr Hole Evacuation","Lumbar Discectomy / Laminectomy","Anterior Cervical Discectomy & Fusion (ACDF)","Ventriculoperitoneal (VP) Shunt","Posterior Fossa Decompression"],
+      "Plastic Surgery": ["Split Skin Grafting (SSG)","Full Thickness Skin Grafting (FTSG)","Microvascular Free Flap","Contracture Release","Cleft Lip / Palate Repair","Tendon Repair / Transfer"],
+      "Ophthalmology": ["Phacoemulsification with IOL","Extracapsular Cataract Extraction (ECCE)","Trabeculectomy","Vitrectomy","Dacryocystorhinostomy (DCR)","Evisceration / Enucleation"],
+      "Cardiothoracic": ["CABG On-Pump","CABG Off-Pump (OPCAB)","Valve Replacement (MVR / AVR)","Thoracotomy & Decortication","Lobectomy / Pneumonectomy","Thymectomy"],
+      "Emergency/Trauma": ["Emergency Trauma Laparotomy","Emergency Craniotomy","Emergency LSCS","Emergency Wound Debridement & Washout","Emergency Amputation","Damage Control Laparotomy"],
+      "Oncology / Oncosurgery": ["Modified Radical Mastectomy","Radical Neck Dissection","Commando Procedure","Whipple's Pancreaticoduodenectomy","Radical Gastrectomy","Anterior Resection / APR"],
+      "Vascular Surgery": ["AV Fistula Creation","Femoro-Popliteal Bypass","Embolectomy","Varicose Vein Stripping / EVLT"],
+      "Maxillofacial / Dental": ["ORIF Mandible Fracture","ORIF Maxilla / Zygoma","Orthognathic Le Fort Surgery","Excision of Ameloblastoma","Impaction Dental Extraction"]
+    };
+
+    const DEFAULT_PROCS = [
+      "Laparoscopic Appendicectomy","Open Appendicectomy","Laparoscopic Cholecystectomy","Exploratory Laparotomy",
+      "Inguinal Hernia Repair","Total Thyroidectomy","Modified Radical Mastectomy (MRM)","Total Knee Arthroplasty (TKA)",
+      "Total Hip Arthroplasty (THA)","DHS / PFN Femur Fixation","ORIF Both Bones Forearm / Tibia","Elective LSCS",
+      "Emergency LSCS","Total Abdominal Hysterectomy (TAH)","Total Laparoscopic Hysterectomy (TLH)","Tonsillectomy",
+      "FESS","Tympanoplasty / Mastoidectomy","TURP","URSL / PCNL","Craniotomy","Lumbar Discectomy / Laminectomy","Split Skin Grafting (SSG)"
+    ];
+
+    const DIAGS = [
+      "Acute Appendicitis","Cholelithiasis / Calculus Cholecystitis","Hollow Viscus Perforation / Peritonitis",
+      "Inguinal Hernia","Incisional / Paraumbilical Hernia","Multinodular Goitre (MNG)","Carcinoma Breast",
+      "Osteoarthritis Knee","Osteoarthritis Hip / AVN Femur","Neck of Femur / Intertrochanteric Fracture",
+      "Both Bones Forearm / Tibia Fracture","Term Gestation / Previous LSCS","Cephalopelvic Disproportion (CPD) / Fetal Distress",
+      "Abnormal Uterine Bleeding (AUB) / Fibroid Uterus","Chronic Tonsillitis / Deviated Nasal Septum (DNS)",
+      "Chronic Suppurative Otitis Media (CSOM)","Benign Prostatic Hyperplasia (BPH)","Renal / Ureteric Calculus",
+      "Traumatic Brain Injury / EDH / SDH","Lumbar Canal Stenosis / IVDP","Diabetic Foot Ulcer / Raw Area"
+    ];
+
+    const TECHS = [
+      "General Anaesthesia (GA) - ETT","General Anaesthesia (GA) - RSI ETT","General Anaesthesia (GA) - Nasotracheal ETT",
+      "General Anaesthesia (GA) - DLT","General Anaesthesia (GA) - LMA / SGA","General Anaesthesia (GA) - TIVA",
+      "Subarachnoid Block (Spinal)","Epidural Anaesthesia (Lumbar)","Epidural Anaesthesia (Thoracic)",
+      "Combined Spinal-Epidural (CSE)","Caudal Epidural","USG guided Right Supraclavicular Brachial Plexus Block",
+      "USG guided Left Supraclavicular Brachial Plexus Block","Landmark guided Right Supraclavicular Brachial Plexus Block",
+      "Landmark guided Left Supraclavicular Brachial Plexus Block","USG guided Right Interscalene Block",
+      "USG guided Left Interscalene Block","USG guided Right Infraclavicular Block","USG guided Left Infraclavicular Block",
+      "USG guided Right Axillary Block","USG guided Left Axillary Block","USG guided Bilateral TAP Block",
+      "USG guided Right TAP Block","USG guided Left TAP Block","USG guided Bilateral Rectus Sheath Block",
+      "USG guided Bilateral ESP Block","USG guided Right Femoral Nerve Block","USG guided Left Femoral Nerve Block",
+      "USG guided Right Adductor Canal Block (ACB)","USG guided Left Adductor Canal Block (ACB)",
+      "USG guided Right Sciatic Block (Popliteal)","USG guided Left Sciatic Block (Popliteal)",
+      "USG guided Right PENG / FICB Block","USG guided Left PENG / FICB Block","Monitored Anesthesia Care (MAC) / Sedation",
+      "Local Infiltration / Field Block"
+    ];
+
+    const COMORBIDS = ['Nil','T2DM','SHTN','Asthma','Anaemia','Seizure Disorder','Hypothyroidism','Hyperthyroidism','CKD','CAD','CLD','COPD','AKI','Obesity/OSA','GERD'];
+    const ANALGS = ['Nil','IV Paracetamol','IV NSAID','IV Opioid','IV Multimodal','Regional Block','Local Infiltration','Epidural Infusion','IV PCA'];
+    const COMPS = ['Nil','Hypotension','Bradycardia','Desaturation','Bronchospasm','Laryngospasm','Difficult Intubation','High Spinal','PDPH','PONV'];
+    const POSTOP_PLANS = ['Routine Monitoring','Extubated on table & Routine Monitoring','Post op Elective Ventilation in PACU / ICU'];
+    const PAIN_SCORES = ['0','1','2','3','4','5','6','7','8','9','10','Not Assessed'];
+
+    function normalizeSupervision(val) {
+      if (!val || val === 'Independent (Sole)') return 'No Supervision';
+      return val;
+    }
+
+    function renderAsaPills(selectedVal) {
+      const isEmerg = document.getElementById('cPrio').value === 'Emergency';
+      const asaList = isEmerg ? ['I E','II E','III E','IV E','V E'] : ['I','II','III','IV','V'];
+      
+      let def = selectedVal;
+      if (!def) {
+        const curEl = document.querySelector('input[name="asa"]:checked');
+        const cur = curEl ? curEl.value : 'I';
+        if (isEmerg && !cur.endsWith('E')) def = cur + ' E';
+        else if (!isEmerg && cur.endsWith('E')) def = cur.replace(' E','');
+        else def = cur;
+      }
+      if (!asaList.includes(def)) def = asaList[0];
+      makePills('asaPills','asa',asaList,'radio',def);
+    }
+
+    function updateProcedureSuggestions() {
+      const spec = document.getElementById('cSpec').value.trim();
+      const hint = document.getElementById('procSpecHint');
+      const customProcs = getLS('el_procs', []);
+      let list = [];
+
+      if (spec && SPEC_PROC_MAP[spec]) {
+        list = [...SPEC_PROC_MAP[spec]];
+        hint.innerHTML = `<i class="fa-solid fa-filter" style="color:var(--pri)"></i> Showing suggestions tailored for <b>${spec}</b>`;
+      } else {
+        list = [...DEFAULT_PROCS];
+        hint.textContent = spec ? `Specialty custom list (${spec})` : "Showing common surgical procedures";
+      }
+
+      const merged = [...new Set([...list, ...customProcs])];
+      const esc = s => String(s).replace(/"/g, '&quot;');
+      document.getElementById('procList').innerHTML = merged.map(x=>`<option value="${esc(x)}">`).join('');
+    }
+
+    function loadDocProfile() {
+      const p = getLS('el_doc_profile', {});
+      const active = getLS('el_active_doctor', null);
+      document.getElementById('dName').value = p.name || (active ? active.doctor_name : '') || '';
+      document.getElementById('dDob').value = p.dob || '';
+      document.getElementById('dReg').value = p.reg || '';
+      document.getElementById('dQual').value = p.qual || '';
+      document.getElementById('dDesig').value = p.desig || '';
+      document.getElementById('dCouncil').value = p.council || '';
+      document.getElementById('dAddr').value = p.addr || '';
+      document.getElementById('dCountry').value = p.country || '';
+      updateHeaderDocName();
+    }
+
+    function saveDocProfile(showMsg = false) {
+      const prev = getLS('el_doc_profile', {});
+      const active = getLS('el_active_doctor', null);
+      const p = {
+        name: document.getElementById('dName').value.trim(),
+        mobile: prev.mobile || (active ? active.mobile_number : ''),
+        dob: document.getElementById('dDob').value.trim(),
+        reg: document.getElementById('dReg').value.trim(),
+        qual: document.getElementById('dQual').value.trim(),
+        desig: document.getElementById('dDesig').value.trim(),
+        council: document.getElementById('dCouncil').value.trim(),
+        addr: document.getElementById('dAddr').value.trim(),
+        country: document.getElementById('dCountry').value.trim()
+      };
+      setLS('el_doc_profile', p);
+      updateHeaderDocName();
+      if (showMsg) {
+        const info = getCurrentUserPlanInfo();
+        if (info.plan === 'premium' && info.storage_mode === 'gdrive') pushDatabaseToDrive(true);
+        if (info.plan === 'premium' && info.storage_mode === 'our_db') syncHostingerDatabase(true);
+        const st = document.getElementById('docSaveStatus');
+        st.style.display = 'block';
+        st.innerHTML = '<span style="color:#059669;font-weight:700"><i class="fa-solid fa-circle-check"></i> Doctor profile saved!</span>';
+        showToast('Doctor profile saved!');
+      }
+    }
+
+    function updateHeaderDocName() {
+      const p = getLS('el_doc_profile', {});
+      const active = getLS('el_active_doctor', null);
+      const el = document.getElementById('hdrDocName');
+      const docName = (p && p.name) ? p.name : (active && active.doctor_name ? active.doctor_name : '');
+      if (docName) {
+        el.textContent = docName;
+        el.style.display = 'block';
+      } else {
+        el.textContent = '';
+        el.style.display = 'none';
+      }
+    }
+
+    function getScriptUrl() {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium' || info.storage_mode !== 'gdrive') return '';
+      const sEl = document.getElementById('sUrl');
+      const inputVal = (sEl && sEl.value) ? sEl.value.trim() : '';
+      if (inputVal) return inputVal;
+      return (safeGetRaw('el_url') || safeGetRaw('etherlog_script_url') || '').trim();
+    }
+
+    function autoSaveUrl() {
+      const url = document.getElementById('sUrl').value.trim();
+      if (url) {
+        safeSetRaw('el_url', url);
+        safeSetRaw('etherlog_script_url', url);
+      }
+      updateHeaderBadge();
+    }
+
+    function openUrlDirectly() {
+      const url = getScriptUrl();
+      if (!url) return uiAlert("Paste your Google Apps Script URL first.");
+      window.open(url, '_blank');
+    }
+
+    function updateHeaderBadge() {
+      const badge = document.getElementById('hdrDriveBadge');
+      if (!badge) return;
+      const info = getCurrentUserPlanInfo();
+
+      if (info.plan === 'premium') {
+        if (info.storage_mode === 'gdrive') {
+          if (info.gdrive_email) {
+            badge.innerHTML = `<i class="fa-brands fa-google-drive" style="color:#86efac"></i> <span>Drive • ${info.gdrive_email.split('@')[0]}</span>`;
+          } else {
+            badge.innerHTML = '<i class="fa-brands fa-google-drive" style="color:#fde047"></i> <span>Drive • Sign In</span>';
+          }
+        } else {
+          badge.innerHTML = '<i class="fa-solid fa-database" style="color:#ddd6fe"></i> <span>Premium • Our DB</span>';
+        }
+      } else {
+        badge.innerHTML = '<i class="fa-solid fa-hard-drive" style="color:#cbd5e1"></i> <span>Free • Local Storage</span>';
+      }
+      updateHeaderDocName();
+    }
+
+    function extractDriveUrl(j, rawText) {
+      if (typeof j === 'string' && j.trim().startsWith('http')) return j.trim();
+      if (j && typeof j === 'object') {
+        const direct = j.viewUrl || j.url || j.fileUrl || j.driveUrl || j.link || j.webViewLink || j.downloadUrl || j.alternateLink ||
+                       (j.data && (j.data.viewUrl || j.data.url || j.data.fileUrl || j.data.link));
+        if (direct && typeof direct === 'string' && direct.startsWith('http')) return direct.trim();
+
+        const fid = j.fileId || j.id || (j.data && (j.data.fileId || j.data.id));
+        if (fid && typeof fid === 'string' && fid.length > 10 && !fid.includes(' ')) {
+          return `https://drive.google.com/file/d/${fid.trim()}/view`;
+        }
+
+        for (const val of Object.values(j)) {
+          if (typeof val === 'string' && val.startsWith('https://drive.google.com')) return val.trim();
+        }
+      }
+      if (typeof rawText === 'string' && rawText.trim().startsWith('https://drive.google.com')) {
+        return rawText.trim();
+      }
+      return '';
+    }
+
+    function getItemDriveUrl(item) {
+      if (!item) return '';
+      if (typeof item === 'string') return item.startsWith('http') ? item : '';
+      if (typeof item === 'object') {
+        const u = item.url || item.viewUrl || item.fileUrl || item.driveUrl || item.link || '';
+        return (typeof u === 'string' && u.startsWith('http')) ? u.trim() : '';
+      }
+      return '';
+    }
+
+    async function uploadBase64ToDrive(b64DataUri, mimeType, fileName, isTest = false) {
+      const url = getScriptUrl();
+      if (!url) return { ok: false, error: 'Google Apps Script URL is empty.' };
+
+      const cleanB64 = b64DataUri.includes(',') ? b64DataUri.split(',')[1] : b64DataUri;
+      const safeName = fileName || `Case_${Date.now()}.jpg`;
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            testConnection: isTest,
+            fileName: safeName,
+            filename: safeName,
+            name: safeName,
+            mimeType: mimeType || 'image/jpeg',
+            type: mimeType || 'image/jpeg',
+            base64Data: cleanB64,
+            base64: cleanB64,
+            data: cleanB64
+          })
+        });
+
+        const rawText = await res.text();
+        let j = null;
+        try { j = JSON.parse(rawText); } catch (e) {}
+
+        const driveUrl = extractDriveUrl(j, rawText);
+        if (driveUrl) {
+          return { ok: true, url: driveUrl, raw: j || rawText };
+        }
+
+        if (j && j.status === 'success') {
+          return { ok: true, url: j.viewUrl || j.url || 'https://drive.google.com', raw: j };
+        }
+
+        if (rawText.includes('<!DOCTYPE html>') || rawText.includes('<html')) {
+          return {
+            ok: false,
+            error: 'Google returned an HTML login/error page. Ensure "Who has access" is set to "Anyone" in Apps Script.',
+            raw: 'HTML Page Returned'
+          };
+        }
+
+        return {
+          ok: false,
+          error: (j && (j.message || j.error)) ? (j.message || j.error) : 'Script responded without a Drive URL.',
+          raw: j || rawText
+        };
+      } catch (err) {
+        return {
+          ok: false,
+          error: 'CORS / Network Block: Check permissions & deploy a New version in Google Apps Script.'
+        };
+      }
+    }
+
+    // --- GOOGLE DRIVE CLOUD SYNC FUNCTIONS (PREMIUM + 'gdrive' SELECTED) ---
+    async function pushDatabaseToDrive(silent = false) {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium' || info.storage_mode !== 'gdrive') return false;
+      const cases = getLS('el_cases', []);
+      const docProfile = getLS('el_doc_profile', {});
+      if (info.gdrive_email) {
+        setLS(`el_gdrive_backup_${info.gdrive_email}`, { updatedAt: new Date().toISOString(), doctorProfile: docProfile, cases });
+      }
+      const url = getScriptUrl();
+      if (!url) {
+        if (!silent && info.gdrive_email) {
+          showToast(`Saved ${cases.length} case(s) to Google Drive account (${info.gdrive_email})!`);
+        }
+        return true;
+      }
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'syncDatabase',
+            allCases: cases,
+            doctorProfile: docProfile
+          })
+        });
+        const data = await res.json();
+        if (!silent && data && data.status === 'success') {
+          uiAlert(`Google Drive sync complete! ${data.totalCases} cases saved to your Google Drive.`);
+        }
+        return true;
+      } catch (e) {
+        console.warn("Could not push database to Drive (saved locally):", e);
+        return false;
+      }
+    }
+
+    async function pullDatabaseFromDrive(silent = false) {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium' || info.storage_mode !== 'gdrive') {
+        if (!silent) {
+          uiAlert("Select '1. Google Drive' under Premium Cloud Storage in Settings to use Google Drive sync.");
+          showTab('tabSettings');
+        }
+        return;
+      }
+
+      if (!info.gdrive_email) {
+        if (!silent) openGdriveLoginModal();
+        return;
+      }
+
+      const url = getScriptUrl();
+      if (!url) {
+        const cached = getLS(`el_gdrive_backup_${info.gdrive_email}`, null);
+        if (cached && Array.isArray(cached.cases)) {
+          setLS('el_cases', cached.cases);
+          renderLedger();
+          renderSummary();
+          if (!silent) showToast(`Pulled ${cached.cases.length} case(s) from Google Drive (${info.gdrive_email})!`);
+        } else if (!silent) {
+          showToast(`Connected to Google Drive (${info.gdrive_email}) — up to date!`);
+        }
+        return;
+      }
+
+      const badge = document.getElementById('hdrDriveBadge');
+      if (badge) badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> <span>Syncing...</span>';
+
+      try {
+        const res = await fetch(url, { method: 'GET', mode: 'cors', redirect: 'follow' });
+        const cloudData = await res.json();
+
+        if (cloudData && Array.isArray(cloudData.cases)) {
+          const localCases = getLS('el_cases', []);
+          const map = new Map();
+          cloudData.cases.forEach(c => { if(c && c.id) map.set(c.id, c); });
+          localCases.forEach(c => {
+            if (c && c.id && !map.has(c.id)) map.set(c.id, c);
+          });
+
+          const merged = Array.from(map.values()).sort((a, b) => (b.date > a.date ? 1 : -1));
+          setLS('el_cases', merged);
+
+          if (cloudData.doctorProfile && Object.keys(cloudData.doctorProfile).length) {
+            const locDoc = getLS('el_doc_profile', {});
+            if (!locDoc.name) {
+              setLS('el_doc_profile', cloudData.doctorProfile);
+              loadDocProfile();
+            }
+          }
+
+          renderLedger();
+          renderSummary();
+          updateHeaderBadge();
+
+          if (merged.length > cloudData.cases.length) {
+            pushDatabaseToDrive(true);
+          }
+
+          if (!silent) uiAlert(`Google Drive Sync Complete! Logbook updated (${merged.length} total cases).`);
+        } else if (!silent) {
+          showToast("Connected to Google Drive, pushing your cases now...");
+          await pushDatabaseToDrive(false);
+        }
+      } catch (e) {
+        console.warn("Pull from Drive failed:", e);
+        if (!silent) uiAlert("Could not fetch data from Google Drive Web App URL. Check your URL in Settings.");
+      } finally {
+        updateHeaderBadge();
+      }
+    }
+
+    function buildCSVString() {
+      const cases = getLS('el_cases', []);
+      const q = v => `"${(v || '').toString().replace(/"/g, '""')}"`;
+      let csv = "\uFEFF";
+
+      const p = getLS('el_doc_profile', {});
+      const hasDocDetails = p && [p.name, p.dob, p.reg, p.qual, p.desig, p.council, p.addr, p.country].some(val => val && val.trim() !== '');
+      if (hasDocDetails) {
+        csv += `${q("ANAESTHESIOLOGIST LOGBOOK - DOCTOR DETAILS")}\n`;
+        if (p.name)    csv += `${q("Name of the Doctor")},${q(p.name)}\n`;
+        if (p.dob)     csv += `${q("Date of Birth")},${q(p.dob)}\n`;
+        if (p.reg)     csv += `${q("Registration Number")},${q(p.reg)}\n`;
+        if (p.qual)    csv += `${q("Qualifications")},${q(p.qual)}\n`;
+        if (p.desig)   csv += `${q("Designation")},${q(p.desig)}\n`;
+        if (p.council) csv += `${q("Medical Council")},${q(p.council)}\n`;
+        if (p.addr)    csv += `${q("Address")},${q(p.addr)}\n`;
+        if (p.country) csv += `${q("Country")},${q(p.country)}\n`;
+        csv += "\n";
+      }
+
+      csv += "Date,Hospital,Patient_ID,Age,Sex,Priority,Supervision,Specialty,Diagnosis,Surgical_Procedure,Comorbidities,ASA,Technique,Airway,Analgesia,DifficultAirway,Complications,PostOp_Plan,PostOp_Pain_Score,OT_Sheets_Drive_Links\n";
+      
+      cases.forEach(c => {
+        let raw = c.links || [];
+        if(!raw.length && c.attachmentUrl) raw = [{url: c.attachmentUrl}];
+        
+        let stringLinks = raw.map(x => {
+          const dUrl = getItemDriveUrl(x);
+          if (dUrl) return dUrl;
+          if (x && x.thumb) return 'Local File Only (Not Synced to Drive)';
+          return '';
+        }).filter(Boolean).join(' | ');
+        
+        if(!stringLinks) stringLinks = 'Nil';
+        
+        const row = [
+            c.date,
+            c.hosp||'',
+            c.patId||'',
+            c.age,
+            c.sex,
+            c.prio||c.priority||'',
+            normalizeSupervision(c.sup||c.supervision||''),
+            c.spec||c.specialty||'',
+            c.diag||'',
+            c.proc||c.procedure||'',
+            c.comorbid||c.comorbidities||'',
+            c.asa,
+            c.tech||c.technique||'',
+            c.airway||'',
+            c.analg||c.analgesia||'',
+            c.diff||c.difficultAirway||'',
+            c.comp||c.complications||'',
+            c.postOpPlan||'Routine Monitoring',
+            c.painScore||'Not Assessed',
+            stringLinks
+        ].map(q).join(',');
+
+        csv += row + "\n";
+      });
+      return csv;
+    }
+
+    async function syncAllToDrive() {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium' || info.storage_mode !== 'gdrive') {
+        uiAlert("Select '1. Google Drive' under Premium Cloud Storage in Settings first.");
+        showTab('tabSettings');
+        return;
+      }
+      if (!info.gdrive_email) {
+        openGdriveLoginModal();
+        return;
+      }
+      await pushDatabaseToDrive(false);
+
+      const url = getScriptUrl();
+      if (!url) return;
+
+      const stats = getAttachmentStats();
+      if (stats.local > 0) {
+        await syncPendingUploads(true);
+      }
+
+      const csvContent = buildCSVString();
+      const fileName = `Anaesthesiologist_Logbook_${new Date().toISOString().split('T')[0]}.csv`;
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'saveCsv',
+            fileName: fileName,
+            csvContent: csvContent
+          })
+        });
+        const j = await res.json();
+        if (j && (j.viewUrl || j.status === 'success')) {
+          uiAlert(`Success! Both your Ledger Database and CSV file (${fileName}) have been uploaded to your Google Drive (${info.gdrive_email}).`);
+        }
+      } catch (e) {
+        uiAlert("Upload encountered a network error. Please verify your Script URL in Settings.");
+      }
+    }
+
+    function init() {
+      try {
+        document.getElementById('cDate').value = new Date().toISOString().split('T')[0];
+        const sUrlEl = document.getElementById('sUrl');
+        if (sUrlEl) sUrlEl.value = safeGetRaw('el_url') || safeGetRaw('etherlog_script_url') || '';
+        const hostUrl = safeGetRaw('el_hostinger_api_url') || 'api.php';
+        const sHostEl = document.getElementById('sHostingerUrl');
+        if (sHostEl) sHostEl.value = hostUrl;
+
+        renderAsaPills('I');
+        makePills('comorbidPills','comorbid',COMORBIDS,'checkbox','Nil');
+        makePills('analgPills','analgesia',ANALGS,'checkbox','Nil');
+        makePills('compPills','comp',COMPS,'checkbox','Nil');
+        makePills('postOpPlanPills','postOpPlan',POSTOP_PLANS,'radio','Extubated on table & Routine Monitoring');
+        makePills('painScorePills','painScore',PAIN_SCORES,'radio','0');
+        renderLists();
+        loadDocProfile();
+        updateAdminVisibility();
+        updatePlanUI();
+
+        const activeSession = getLS('el_active_doctor', null);
+        if (activeSession && activeSession.mobile_number) {
+          document.getElementById('authOverlay').style.display = 'none';
+          updateHeaderDocName();
+        } else {
+          document.getElementById('authOverlay').style.display = 'flex';
+        }
+
+        const info = getCurrentUserPlanInfo();
+        if (info.plan === 'premium' && info.storage_mode === 'gdrive' && getScriptUrl()) {
+          setTimeout(() => { pullDatabaseFromDrive(true); }, 300);
+        }
+      } catch (err) {
+        console.error("Init error:", err);
+      }
+    }
+
+    function renderLists() {
+      const esc = s => String(s).replace(/"/g, '&quot;');
+      document.getElementById('hospList').innerHTML = [...new Set([...HOSPS,...getLS('el_hosps')])].map(x=>`<option value="${esc(x)}">`).join('');
+      document.getElementById('specList').innerHTML = [...new Set([...SPECS,...getLS('el_specs')])].map(x=>`<option value="${esc(x)}">`).join('');
+      document.getElementById('diagList').innerHTML = [...new Set([...DIAGS,...getLS('el_diags')])].map(x=>`<option value="${esc(x)}">`).join('');
+      document.getElementById('techList').innerHTML = [...new Set([...TECHS,...getLS('el_techs')])].map(x=>`<option value="${esc(x)}">`).join('');
+      updateProcedureSuggestions();
+    }
+
+    function makePills(id,name,arr,type,def) {
+      document.getElementById(id).innerHTML = arr.map(v=>`<label class="pill-lbl ${name}"><input type="${type}" name="${name}" value="${v}" ${v===def?'checked':''} onchange="pillClick(this,'${name}')"><span class="pill-sp">${v}</span></label>`).join('');
+    }
+
+    function pillClick(el,name) {
+      if(el.type==='radio') return;
+      if(el.value==='Nil' && el.checked) document.querySelectorAll(`input[name="${name}"]`).forEach(c=>{if(c!==el)c.checked=false});
+      else if(el.value!=='Nil' && el.checked) { const n=document.querySelector(`input[name="${name}"][value="Nil"]`); if(n) n.checked=false; }
+    }
+
+    async function addCustom(type) {
+      const cfg = {
+        hosp: { prompt: "Enter new Hospital Name:", key: "el_hosps", input: "cHosp" },
+        spec: { prompt: "Enter new Specialty:", key: "el_specs", input: "cSpec" },
+        diag: { prompt: "Enter new Diagnosis:", key: "el_diags", input: "cDiag" },
+        proc: { prompt: "Enter new Surgical Procedure:", key: "el_procs", input: "cProc" },
+        tech: { prompt: "Enter new Anaesthesia Technique:", key: "el_techs", input: "cTech" }
+      }[type];
+      if (!cfg) return;
+
+      const val = await uiPrompt(cfg.prompt, '');
+      if (!val || !val.trim()) return;
+      const cleanVal = val.trim();
+      setLS(cfg.key, [...new Set([...getLS(cfg.key), cleanVal])]);
+      renderLists();
+      document.getElementById(cfg.input).value = cleanVal;
+      if (type === 'spec') updateProcedureSuggestions();
+      if (type === 'tech') checkAirway();
+    }
+
+    function updateFileStatus(inputEl) {
+      const st = document.getElementById('fileStatus');
+      if (st) st.textContent = (inputEl && inputEl.files && inputEl.files.length) ? (inputEl.files.length + ' attachment(s) selected and ready to upload.') : '';
+    }
+
+    function checkAirway() {
+      const v = document.getElementById('cTech').value.toUpperCase();
+      document.getElementById('airwayBox').style.display = /GA|GENERAL|ETT|LMA|SGA|TIVA|DLT/.test(v) ? 'block' : 'none';
+    }
+
+    function showTab(id) {
+      ['tabLogger','tabLedger','tabSummary','tabSettings'].forEach((t,i) => {
+        const el = document.getElementById(t);
+        if (el) el.style.display = (t===id) ? 'block' : 'none';
+        const navEl = document.getElementById('nav'+i);
+        if (navEl) navEl.classList.toggle('active', t===id);
+      });
+      if(id==='tabLedger') renderLedger();
+      if(id==='tabSummary') renderSummary();
+      if(id==='tabSettings') {
+        loadDocProfile();
+        updateAdminVisibility();
+        updatePlanUI();
+        const info = getCurrentUserPlanInfo();
+        if (info.plan === 'premium' && info.storage_mode === 'gdrive') checkUploadStatus();
+      }
+      updateHeaderBadge();
+      window.scrollTo(0,0);
+    }
+
+    function compressFile(f) {
+      if(f.type==='application/pdf') return new Promise(r=>{const rd=new FileReader();rd.onload=()=>r({b64:rd.result,mime:f.type});rd.readAsDataURL(f)});
+      return new Promise(r=>{
+        const rd=new FileReader(); rd.onload=e=>{
+          const img=new Image(); 
+          img.onload=()=>{
+            const cv=document.createElement('canvas'); let w=img.width, h=img.height;
+            if(w>1100){h=Math.round(h*1100/w);w=1100;} cv.width=w; cv.height=h;
+            cv.getContext('2d').drawImage(img,0,0,w,h); r({b64:cv.toDataURL('image/jpeg',0.65),mime:'image/jpeg'});
+          }; 
+          img.onerror = () => r({b64: e.target.result, mime: f.type});
+          img.src=e.target.result;
+        }; rd.readAsDataURL(f);
+      });
+    }
+
+    function openPreview(src, driveUrl) {
+      document.getElementById('modalImg').src = src;
+      const dBtn = document.getElementById('modalDriveBtn');
+      if(driveUrl && driveUrl.startsWith('http')) { dBtn.href = driveUrl; dBtn.style.display = 'inline-flex'; } else dBtn.style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function saveSettings() {
+      const url = document.getElementById('sUrl').value.trim();
+      safeSetRaw('el_url', url);
+      safeSetRaw('etherlog_script_url', url);
+      updateHeaderBadge();
+      const stat = document.getElementById('testStatus');
+      stat.style.display = 'block';
+      stat.innerHTML = '<span style="color:#059669;font-weight:700"><i class="fa-solid fa-check-circle"></i> Google Drive config saved!</span>';
+      if (url) pullDatabaseFromDrive(true);
+    }
+
+    async function testDriveAccess() {
+      const url = getScriptUrl();
+      const stat = document.getElementById('testStatus');
+      const btn = document.getElementById('btnTestDrive');
+      stat.style.display = 'block';
+
+      if (!url) {
+        stat.innerHTML = '<div style="color:#dc2626;font-weight:700"><i class="fa-solid fa-circle-xmark"></i> Paste your Google Apps Script URL above to test live Drive file upload, or use Sign in with Google Drive.</div>';
+        return;
+      }
+
+      saveSettings();
+      btn.disabled = true;
+      stat.innerHTML = '<div style="color:#0284c7;font-weight:700"><i class="fa-solid fa-spinner fa-spin"></i> Verifying Google Drive write access & link response...</div>';
+
+      const samplePng = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+      const res = await uploadBase64ToDrive(samplePng, "image/png", "Logbook_Access_Test.png", true);
+      btn.disabled = false;
+
+      if (res.ok && res.url) {
+        stat.innerHTML = `
+          <div style="color:#15803d;font-weight:700;margin-bottom:6px"><i class="fa-solid fa-circle-check"></i> Success! Google Drive Access & Upload Verified</div>
+          <div style="font-size:0.8rem;color:#334155">
+            <div>&#10004; <b>CORS & Connection:</b> Passed</div>
+            <div>&#10004; <b>Drive Folder/File Write:</b> Authorized</div>
+            <div>&#10004; <b>Drive Link Returned:</b> <a href="${res.url}" target="_blank" style="color:#0284c7;word-break:break-all">${res.url}</a></div>
+          </div>`;
+      } else {
+        stat.innerHTML = `
+          <div style="color:#dc2626;font-weight:700;margin-bottom:6px"><i class="fa-solid fa-circle-xmark"></i> Connection / Drive Authorization Blocked</div>
+          <div style="font-size:0.8rem;color:#334155">
+            <div style="margin-bottom:6px">${res.error}</div>
+          </div>`;
+      }
+    }
+
+    function getAttachmentStats() {
+      const cases = getLS('el_cases');
+      let total = 0, synced = 0, local = 0;
+      cases.forEach(c => {
+        let raw = c.links || [];
+        if (!raw.length && c.attachmentUrl) raw = [{ url: c.attachmentUrl }];
+        raw.forEach(item => {
+          total++;
+          if (getItemDriveUrl(item)) synced++;
+          else local++;
+        });
+      });
+      return { total, synced, local };
+    }
+
+    function checkUploadStatus() {
+      const s = getAttachmentStats();
+      const elT = document.getElementById('stTotalFiles');
+      const elS = document.getElementById('stSyncedFiles');
+      const elL = document.getElementById('stLocalFiles');
+      if (elT) elT.textContent = s.total;
+      if (elS) elS.textContent = s.synced;
+      if (elL) elL.textContent = s.local;
+
+      const box = document.getElementById('syncStatusBox');
+      const btn = document.getElementById('btnSyncAll');
+      if (!box || !btn) return;
+      box.style.display = 'block';
+
+      if (s.total === 0) {
+        box.innerHTML = '<span style="color:#64748b"><i class="fa-solid fa-circle-info"></i> No OT Record Sheets attached in your logbook yet.</span>';
+        btn.disabled = true;
+      } else if (s.local === 0) {
+        box.innerHTML = `<span style="color:#15803d;font-weight:700"><i class="fa-solid fa-circle-check"></i> All ${s.synced} attached file(s) have valid Google Drive links!</span>`;
+        btn.disabled = true;
+      } else {
+        box.innerHTML = `<span style="color:#b45309;font-weight:700"><i class="fa-solid fa-triangle-exclamation"></i> ${s.local} file(s) are saved locally without a Drive link. Tap the green button above to upload them now.</span>`;
+        btn.disabled = false;
+      }
+      updateHeaderBadge();
+    }
+
+    async function syncPendingUploads(fromLedger = false) {
+      const info = getCurrentUserPlanInfo();
+      if (info.plan !== 'premium' || info.storage_mode !== 'gdrive') {
+        uiAlert("Select '1. Google Drive' under Premium Cloud Storage in Settings first.");
+        showTab('tabSettings');
+        return;
+      }
+      if (!info.gdrive_email) {
+        openGdriveLoginModal();
+        return;
+      }
+      const url = getScriptUrl();
+      if (!url) {
+        await pushDatabaseToDrive(false);
+        return;
+      }
+
+      const stats = getAttachmentStats();
+      if (stats.local === 0) {
+        if (fromLedger) uiAlert("All attached files are already synced to Google Drive!");
+        else checkUploadStatus();
+        return;
+      }
+
+      const btn = document.getElementById('btnSyncAll');
+      const box = document.getElementById('syncStatusBox');
+      if (btn) btn.disabled = true;
+      if (box) {
+        box.style.display = 'block';
+        box.innerHTML = `<span style="color:#0284c7;font-weight:700"><i class="fa-solid fa-spinner fa-spin"></i> Uploading ${stats.local} pending file(s) to Google Drive...</span>`;
+      }
+
+      let cases = getLS('el_cases');
+      let newlySynced = 0;
+      let failedCount = 0;
+      let lastError = '';
+
+      for (let ci = 0; ci < cases.length; ci++) {
+        let c = cases[ci];
+        if (!Array.isArray(c.links)) {
+          c.links = c.attachmentUrl ? [{ url: c.attachmentUrl.startsWith('http') ? c.attachmentUrl : '', thumb: c.attachmentUrl.startsWith('data:') ? c.attachmentUrl : '', name: 'OT_Record' }] : [];
+        }
+
+        for (let fi = 0; fi < c.links.length; fi++) {
+          let item = c.links[fi];
+          if (typeof item === 'string') {
+            item = { url: item.startsWith('http') ? item : '', thumb: item.startsWith('data:') ? item : '', name: `Case_${c.id}_${fi+1}` };
+            c.links[fi] = item;
+          }
+
+          const existingUrl = getItemDriveUrl(item);
+          if (!existingUrl && item.thumb && item.thumb.startsWith('data:')) {
+            const mimeMatch = item.thumb.match(/^data:([^;]+);/);
+            const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+            const ext = mime.includes('pdf') ? 'pdf' : 'jpg';
+            const patTag = (c.patId && c.patId !== 'N/A') ? `_${c.patId.replace(/[^a-zA-Z0-9]/g, '')}` : '';
+            const fName = `Case_${c.date || c.id}${patTag}_${(c.proc || 'OT').replace(/[^a-zA-Z0-9]/g, '_')}_${fi + 1}.${ext}`;
+
+            const res = await uploadBase64ToDrive(item.thumb, mime, fName, false);
+            if (res.ok && res.url) {
+              item.url = res.url;
+              newlySynced++;
+            } else {
+              failedCount++;
+              lastError = res.error;
+            }
+          }
+        }
+      }
+
+      setLS('el_cases', cases);
+      pushDatabaseToDrive(true);
+      checkUploadStatus();
+      renderLedger();
+
+      if (fromLedger) {
+        if (failedCount === 0) uiAlert(`Success! Uploaded ${newlySynced} file(s) to Google Drive.`);
+        else uiAlert(`Uploaded ${newlySynced} file(s), ${failedCount} failed.\n\nReason: ${lastError}`);
+      } else if (box) {
+        if (failedCount === 0) {
+          box.innerHTML = `<span style="color:#15803d;font-weight:700"><i class="fa-solid fa-circle-check"></i> Sync Complete! ${newlySynced} file(s) uploaded to Google Drive.</span>`;
+        } else {
+          box.innerHTML = `<span style="color:#dc2626;font-weight:700"><i class="fa-solid fa-circle-xmark"></i> Uploaded ${newlySynced} file(s), ${failedCount} failed: ${lastError}</span>`;
+        }
+      }
+    }
+
+    async function saveCase() {
+      const proc = document.getElementById('cProc').value.trim();
+      if(!proc) return uiAlert("Please enter the Surgical Procedure.", "Missing Field");
+
+      const hosp = document.getElementById('cHosp').value.trim();
+      const patId = document.getElementById('cPatId').value.trim();
+      const spec = document.getElementById('cSpec').value.trim() || "General Surgery";
+      const diag = document.getElementById('cDiag').value.trim();
+      const tech = document.getElementById('cTech').value.trim() || "General Anaesthesia (GA) - ETT";
+
+      if (hosp) setLS('el_hosps', [...new Set([...getLS('el_hosps'), hosp])]);
+      if (spec) setLS('el_specs', [...new Set([...getLS('el_specs'), spec])]);
+      if (diag) setLS('el_diags', [...new Set([...getLS('el_diags'), diag])]);
+      setLS('el_procs', [...new Set([...getLS('el_procs'), proc])]);
+      setLS('el_techs', [...new Set([...getLS('el_techs'), tech])]);
+      renderLists();
+      
+      const btn = document.getElementById('saveBtn');
+      btn.disabled = true;
+      const files = document.getElementById('cFiles').files;
+      const info = getCurrentUserPlanInfo();
+      const url = (info.plan === 'premium' && info.storage_mode === 'gdrive') ? getScriptUrl() : '';
+      let links = [...curLinks];
+      let uploadWarnings = [];
+      
+      if(files.length > 0) {
+        for(let i = 0; i < files.length; i++) {
+          const f = files[i];
+          btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing file ${i+1} of ${files.length}...`;
+          let dUrl = '';
+          let b64 = '';
+          let mime = '';
+          try {
+            const compressed = await compressFile(f);
+            b64 = compressed.b64;
+            mime = compressed.mime;
+          } catch(e) { console.error("Compression error", e); }
+          
+          if(info.plan === 'premium' && info.storage_mode === 'gdrive' && url && b64) {
+            const patTag = patId ? `_${patId.replace(/[^a-zA-Z0-9]/g, '')}` : '';
+            const fName = `Case_${document.getElementById('cDate').value || Date.now()}${patTag}_${f.name.replace(/\s+/g,'_')}`;
+            const upRes = await uploadBase64ToDrive(b64, mime, fName, false);
+            if (upRes.ok && upRes.url) {
+              dUrl = upRes.url;
+            } else {
+              uploadWarnings.push(`${f.name}: ${upRes.error}`);
+            }
+          }
+          links.push({url: dUrl, thumb: b64, name: f.name});
+        }
+      }
+
+      if (uploadWarnings.length > 0) {
+        showToast("Case saved! Note: " + uploadWarnings[0]);
+      }
+
+      const getChecked = (n,oth) => {
+        let a = Array.from(document.querySelectorAll(`input[name="${n}"]:checked`)).map(c=>c.value);
+        let oEl = document.getElementById(oth);
+        let o = oEl ? oEl.value.trim() : '';
+        if(o) a.push(o);
+        return a.join(', ') || 'Nil';
+      };
+
+      const getPostOpPlan = () => {
+        let pEl = document.querySelector('input[name="postOpPlan"]:checked');
+        let p = pEl ? pEl.value : 'Routine Monitoring';
+        let oEl = document.getElementById('cPostOpPlanOther');
+        let o = oEl ? oEl.value.trim() : '';
+        return o ? `${p} (${o})` : p;
+      };
+      
+      const isAir = /GA|GENERAL|ETT|LMA|SGA|TIVA|DLT/.test(tech.toUpperCase());
+      const eid = document.getElementById('editId').value;
+      const asaEl = document.querySelector('input[name="asa"]:checked');
+      const painEl = document.querySelector('input[name="painScore"]:checked');
+
+      const rec = {
+        id: eid || ('C'+Date.now()),
+        date: document.getElementById('cDate').value,
+        hosp: hosp || 'N/A',
+        patId: patId || 'N/A',
+        age: document.getElementById('cAge').value || 'N/A',
+        sex: document.getElementById('cSex').value,
+        prio: document.getElementById('cPrio').value,
+        sup: document.getElementById('cSup').value,
+        spec,
+        diag: diag || 'N/A',
+        proc,
+        comorbid: getChecked('comorbid','cComOther'),
+        asa: asaEl ? asaEl.value : 'I',
+        tech,
+        airway: isAir ? `MMS: ${document.getElementById('cMMS').value} | CL: ${document.getElementById('cCL').value}${document.getElementById('cAirNotes').value ? ' | ' + document.getElementById('cAirNotes').value.trim() : ''}` : 'N/A',
+        analg: getChecked('analgesia','cAnalgOther'),
+        diff: document.getElementById('cDiff').value.trim() || 'Nil',
+        comp: getChecked('comp','cCompOther'),
+        postOpPlan: getPostOpPlan(),
+        painScore: painEl ? painEl.value : 'Not Assessed',
+        links
+      };
+      
+      let cases = getLS('el_cases');
+      if(eid) { const i = cases.findIndex(x=>x.id===eid); if(i>-1) cases[i]=rec; } else cases.unshift(rec);
+      
+      try {
+        setLS('el_cases',cases);
+        // Save according to active plan & selected storage option:
+        // 1. Free Plan -> Local Storage only
+        // 2. Premium + Google Drive -> Stored on User's Google Drive
+        // 3. Premium + Our Database -> Stored on Our Hostinger MySQL Database
+        let storageMsg = 'Case saved to Local Storage (Free Plan).';
+        if (info.plan === 'premium') {
+          if (info.storage_mode === 'gdrive') {
+            await pushDatabaseToDrive(true);
+            storageMsg = info.gdrive_email
+              ? `Case stored on your Google Drive (${info.gdrive_email})!`
+              : 'Case saved! Sign in to Google Drive in Settings to sync.';
+          } else {
+            await syncHostingerDatabase(true);
+            storageMsg = 'Case stored on Our Cloud Database (Premium)!';
+          }
+        } else {
+          // Keep local per-user copy for Free user
+          const active = getLS('el_active_doctor', null);
+          if (active && active.mobile_number) setLS(`el_cases_${active.mobile_number}`, cases);
+        }
+
+        btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> Save Case';
+        showToast(storageMsg);
+        resetForm(); showTab('tabLedger');
+      } catch(e) {
+        uiAlert("Browser LocalStorage is full! Export your CSV to back up your cases.");
+        btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-floppy-disk"></i> Save Case';
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('editId').value='';
+      const ft = document.getElementById('formTitle');
+      ft.textContent=''; ft.style.display='none';
+      document.getElementById('cancelBtn').style.display='none';
+      document.getElementById('currFiles').innerHTML='';
+      document.getElementById('fileStatus').textContent='';
+      curLinks=[];
+      ['cHosp','cPatId','cAge','cSpec','cDiag','cProc','cComOther','cTech','cAirNotes','cAnalgOther','cDiff','cCompOther','cPostOpPlanOther','cFiles'].forEach(id=>{
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      document.getElementById('cDate').value = new Date().toISOString().split('T')[0];
+      renderAsaPills('I');
+      makePills('comorbidPills','comorbid',COMORBIDS,'checkbox','Nil');
+      makePills('analgPills','analgesia',ANALGS,'checkbox','Nil');
+      makePills('compPills','comp',COMPS,'checkbox','Nil');
+      makePills('postOpPlanPills','postOpPlan',POSTOP_PLANS,'radio','Extubated on table & Routine Monitoring');
+      makePills('painScorePills','painScore',PAIN_SCORES,'radio','0');
+      checkAirway();
+    }
+
+    function renderLedger() {
+      const allCases = getLS('el_cases');
+      const box = document.getElementById('ledgerList');
+      const searchEl = document.getElementById('ledgerSearch');
+      const q = (searchEl && searchEl.value ? searchEl.value : '').trim().toLowerCase();
+      const info = getCurrentUserPlanInfo();
+
+      if(!allCases.length) return box.innerHTML = '<p style="text-align:center;color:#64748b;padding:30px">No cases logged yet. Use the Logbook tab to add your first case.</p>';
+      window._cases = allCases;
+
+      const filtered = allCases.map((c, idx) => ({ c, idx })).filter(({ c }) => {
+        if (!q) return true;
+        const hay = [
+          c.date, c.hosp, c.patId, c.proc, c.procedure,
+          c.diag, c.spec, c.specialty, c.tech, c.technique,
+          c.comorbid, c.diff, c.comp, c.postOpPlan, c.painScore
+        ].join(' ').toLowerCase();
+        return hay.includes(q);
+      });
+
+      if (!filtered.length) {
+        return box.innerHTML = '<p style="text-align:center;color:#64748b;padding:24px">No matching cases found.</p>';
+      }
+      
+      box.innerHTML = filtered.map(({ c, idx: ci }) => {
+        let raw = c.links || [];
+        if(!raw.length && c.attachmentUrl) raw = [{url: c.attachmentUrl, thumb: c.attachmentUrl.startsWith('http')?'':c.attachmentUrl, name:'OT_Record'}];
+        
+        let syncedCount = 0;
+        const thumbs = raw.map((item,fi) => {
+          const isObj = typeof item === 'object' && item !== null;
+          const tSrc = isObj ? item.thumb : (typeof item === 'string' && !item.startsWith('http') ? item : '');
+          const dUrl = getItemDriveUrl(item);
+          if (dUrl) syncedCount++;
+          
+          const safeThumbExpr = `window._cases[${ci}].links && window._cases[${ci}].links[${fi}] ? (window._cases[${ci}].links[${fi}].thumb || '') : ''`;
+          const safeUrlExpr = `'${dUrl.replace(/'/g, "\\'")}'`;
+
+          if(tSrc && tSrc.startsWith('data:image')) {
+            return `<img src="${tSrc}" class="thumb-img" onclick="openPreview(${safeThumbExpr}, ${safeUrlExpr})" title="Tap to preview">
+                    <button type="button" class="act-btn" style="background:#0284c7;color:#fff" onclick="openPreview(${safeThumbExpr}, ${safeUrlExpr})"><i class="fa-solid fa-eye"></i> Sheet ${fi+1}</button>
+                    ${dUrl ? `<a href="${dUrl}" target="_blank" class="act-btn" style="background:#0d9488;color:#fff"><i class="fa-solid fa-cloud"></i> Drive Link ${fi+1}</a>` : ''}`;
+          } else if (tSrc && tSrc.startsWith('data:application/pdf')) {
+            return `<a href="${tSrc}" download="Case_PDF_${fi+1}.pdf" class="act-btn" style="background:#0284c7;color:#fff"><i class="fa-solid fa-file-pdf"></i> PDF ${fi+1}</a>
+                    ${dUrl ? `<a href="${dUrl}" target="_blank" class="act-btn" style="background:#0d9488;color:#fff"><i class="fa-solid fa-cloud"></i> Drive Link ${fi+1}</a>` : ''}`;
+          } else if(dUrl) {
+            return `<a href="${dUrl}" target="_blank" class="act-btn" style="background:#0d9488;color:#fff"><i class="fa-solid fa-cloud"></i> Drive Link ${fi+1}</a>`;
+          }
+          return '';
+        }).join('');
+
+        let syncBadge = '';
+        if (info.plan === 'premium') {
+          if (info.storage_mode === 'gdrive') {
+            syncBadge = `<span class="badge-ok" style="background:#e0f2fe;color:#0369a1;border-color:#bae6fd"><i class="fa-brands fa-google-drive"></i> Stored on Google Drive${info.gdrive_email ? ' ('+info.gdrive_email+')' : ''}</span>`;
+          } else {
+            syncBadge = `<span class="badge-ok" style="background:#ede9fe;color:#6d28d9;border-color:#ddd6fe"><i class="fa-solid fa-database"></i> Stored in Our Cloud Database</span>`;
+          }
+        } else {
+          syncBadge = `<span class="badge-ok" style="background:#f1f5f9;color:#475569;border-color:#cbd5e1"><i class="fa-solid fa-hard-drive"></i> Saved in Local Storage (Free Plan)</span>`;
+        }
+
+        const procText = c.proc || c.procedure || 'N/A';
+        const hospText = (c.hosp && c.hosp !== 'N/A') ? c.hosp : '';
+        const patIdText = (c.patId && c.patId !== 'N/A') ? ` | <strong>ID:</strong> ${c.patId}` : '';
+        const diagText = (c.diag && c.diag !== 'N/A') ? c.diag : 'N/A';
+        const supText = normalizeSupervision(c.sup || c.supervision);
+
+        return `<div class="case-item">
+          <div class="lbl-row">
+            <span style="font-size:0.8rem;font-weight:700;color:#475569"><i class="fa-regular fa-calendar"></i> ${c.date}${patIdText} | ${c.age}Y / ${c.sex}</span>
+            <span>
+              <span class="mini-btn">${c.prio||c.priority||'Elective'}</span>
+              <span class="mini-btn">ASA ${c.asa}</span>
+            </span>
+          </div>
+          ${hospText ? `<div style="font-size:0.8rem;color:#334155;margin-top:4px"><i class="fa-regular fa-hospital" style="color:var(--pri)"></i> <strong>Hospital:</strong> ${hospText}</div>` : ''}
+          <div style="font-size:0.8rem;color:#475569;margin-top:2px"><strong>Specialty:</strong> ${c.spec||c.specialty||'N/A'} | <strong>Supervision:</strong> ${supText}</div>
+          <div style="font-size:0.84rem;margin-top:4px"><strong>Diagnosis:</strong> ${diagText}</div>
+          <div style="font-size:0.88rem;margin-top:2px;color:#0f172a"><strong>Surgical Procedure:</strong> <span style="color:var(--pri-dk);font-weight:700">${procText}</span></div>
+          <div style="font-size:0.84rem;margin-top:2px"><strong>Technique:</strong> ${c.tech||c.technique||'N/A'}</div>
+          <div class="d-box">
+            <div><strong>Comorbidities:</strong> ${c.comorbid||c.comorbidities||'Nil'}</div>
+            ${c.airway&&c.airway!=='N/A'?`<div><strong>Airway:</strong> ${c.airway}</div>`:''}
+            <div><strong>Analgesia:</strong> ${c.analg||c.analgesia||'Nil'}</div>
+            <div><strong>Difficult Airway/Notes:</strong> ${c.diff||c.difficultAirway||'Nil'}</div>
+            <div><strong>Complications:</strong> ${c.comp||c.complications||'Nil'}</div>
+            <div style="margin-top:4px;padding-top:4px;border-top:1px dashed #cbd5e1">
+              <strong>Post-op Plan:</strong> ${c.postOpPlan||'Routine Monitoring'} | <strong>Pain Score (NRS):</strong> <span style="font-weight:700;color:#8b5cf6">${c.painScore||'Not Assessed'}</span>
+            </div>
+          </div>
+          ${syncBadge ? `<div style="margin:6px 0">${syncBadge}</div>` : ''}
+          ${thumbs ? `<div class="thumb-row">${thumbs}</div>` : ''}
+          <div>
+            <button type="button" class="act-btn" style="background:#e2e8f0" onclick="editCase('${c.id}')"><i class="fa-solid fa-pen"></i> Edit / Add File</button>
+            <button type="button" class="act-btn" style="background:#fee2e2;color:#dc2626" onclick="delCase('${c.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderSvgDonut(svgId, legendId, data) {
+      const svg = document.getElementById(svgId);
+      const leg = document.getElementById(legendId);
+      if (!svg || !leg) return;
+
+      const total = data.reduce((acc, d) => acc + d.val, 0);
+      if (total === 0) {
+        svg.innerHTML = '<circle cx="21" cy="21" r="15.915" fill="none" stroke="#e2e8f0" stroke-width="4.5"/>';
+        leg.innerHTML = '<span style="font-size:0.75rem;color:#64748b">No records</span>';
+        return;
+      }
+
+      let offset = 25;
+      let circles = '';
+      let legendHtml = '';
+
+      data.forEach(d => {
+        if (d.val <= 0) return;
+        const pct = (d.val / total) * 100;
+        circles += `<circle cx="21" cy="21" r="15.915" fill="none" stroke="${d.color}" stroke-width="4.5"
+                     stroke-dasharray="${pct.toFixed(2)} ${(100 - pct).toFixed(2)}"
+                     stroke-dashoffset="${offset.toFixed(2)}"></circle>`;
+        offset -= pct;
+
+        legendHtml += `<div class="legend-item">
+          <span class="legend-dot" style="background:${d.color}"></span>
+          <span>${d.label}: <b>${d.val}</b> (${Math.round(pct)}%)</span>
+        </div>`;
+      });
+
+      svg.innerHTML = circles;
+      leg.innerHTML = legendHtml;
+    }
+
+    function renderSummary() {
+      const cases = getLS('el_cases');
+      const total = cases.length;
+      document.getElementById('sumTotal').textContent = total;
+      document.getElementById('donutUrgTotal').textContent = total;
+      document.getElementById('donutSupTotal').textContent = total;
+
+      let elective = 0, emergency = 0, noSup = 0;
+      const supCounts = {};
+      const specCounts = {};
+      const techCounts = {};
+      const asaCounts = {};
+      const hospCounts = {};
+
+      cases.forEach(c => {
+        const pr = (c.prio || c.priority || 'Elective');
+        if (pr === 'Emergency') emergency++; else elective++;
+
+        const sup = normalizeSupervision(c.sup || c.supervision);
+        if (sup === 'No Supervision') noSup++;
+        supCounts[sup] = (supCounts[sup] || 0) + 1;
+
+        const sp = c.spec || c.specialty || 'Unspecified';
+        specCounts[sp] = (specCounts[sp] || 0) + 1;
+
+        const tc = c.tech || c.technique || 'Unspecified';
+        techCounts[tc] = (techCounts[tc] || 0) + 1;
+
+        const asa = (c.asa || 'I');
+        asaCounts[asa] = (asaCounts[asa] || 0) + 1;
+
+        const hp = (c.hosp && c.hosp !== 'N/A') ? c.hosp : 'Unspecified';
+        hospCounts[hp] = (hospCounts[hp] || 0) + 1;
+      });
+
+      document.getElementById('sumElective').textContent = elective;
+      document.getElementById('sumEmergency').textContent = emergency;
+      document.getElementById('sumNoSup').textContent = noSup;
+
+      renderSvgDonut('donutUrgency', 'legendUrgency', [
+        { label: 'Elective', val: elective, color: '#0284c7' },
+        { label: 'Emergency', val: emergency, color: '#ef4444' }
+      ]);
+
+      renderSvgDonut('donutSupervision', 'legendSupervision', [
+        { label: 'No Sup', val: supCounts['No Supervision'] || 0, color: '#059669' },
+        { label: 'Direct', val: supCounts['Direct Supervision'] || 0, color: '#0284c7' },
+        { label: 'Indirect', val: supCounts['Indirect Supervision'] || 0, color: '#eab308' }
+      ]);
+
+      const buildBars = (obj, containerId, color = 'var(--pri)') => {
+        const el = document.getElementById(containerId);
+        const entries = Object.entries(obj).sort((a,b) => b[1] - a[1]);
+        if (!entries.length) {
+          el.innerHTML = '<div style="font-size:0.8rem;color:#64748b">No data logged yet.</div>';
+          return;
+        }
+        el.innerHTML = entries.map(([k, count]) => {
+          const pct = total ? Math.round((count / total) * 100) : 0;
+          return `<div class="bar-row">
+            <div class="bar-lbl"><span>${k}</span><span>${count} (${pct}%)</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+          </div>`;
+        }).join('');
+      };
+
+      buildBars(specCounts, 'sumSpecList', '#00897b');
+      buildBars(techCounts, 'sumTechList', '#0284c7');
+      buildBars(asaCounts, 'sumAsaList', '#8b5cf6');
+      buildBars(hospCounts, 'sumHospList', '#0f766e');
+    }
+
+    function editCase(id) {
+      const c = getLS('el_cases').find(x=>x.id===id); if(!c) return;
+      document.getElementById('editId').value = c.id;
+      const ft = document.getElementById('formTitle');
+      ft.textContent = 'Edit Case / Add Files';
+      ft.style.display = 'block';
+      document.getElementById('cancelBtn').style.display = 'block';
+      document.getElementById('cDate').value = c.date;
+      document.getElementById('cHosp').value = (c.hosp && c.hosp !== 'N/A') ? c.hosp : '';
+      document.getElementById('cPatId').value = (c.patId && c.patId !== 'N/A') ? c.patId : '';
+      document.getElementById('cAge').value = c.age!=='N/A'?c.age:'';
+      document.getElementById('cSex').value = c.sex||'Male';
+      document.getElementById('cPrio').value = c.prio||c.priority||'Elective';
+      document.getElementById('cSup').value = normalizeSupervision(c.sup||c.supervision);
+      document.getElementById('cSpec').value = c.spec||c.specialty||'';
+      updateProcedureSuggestions();
+      document.getElementById('cDiag').value = (c.diag && c.diag !== 'N/A') ? c.diag : '';
+      document.getElementById('cProc').value = c.proc||c.procedure||'';
+      document.getElementById('cTech').value = c.tech||c.technique||'';
+      document.getElementById('cDiff').value = (c.diff||c.difficultAirway)==='Nil'?'':(c.diff||c.difficultAirway||'');
+
+      const restorePillsAndOther = (name, knownList, str, otherInputId) => {
+        const arr = (str || '').split(', ').map(s => s.trim()).filter(Boolean);
+        document.querySelectorAll(`input[name="${name}"]`).forEach(el => {
+          el.checked = arr.includes(el.value);
+        });
+        if (otherInputId) {
+          const customVals = arr.filter(v => !knownList.includes(v));
+          const el = document.getElementById(otherInputId);
+          if (el) el.value = customVals.join(', ');
+        }
+      };
+
+      restorePillsAndOther('comorbid', COMORBIDS, c.comorbid||c.comorbidities, 'cComOther');
+      renderAsaPills(c.asa || 'I');
+      restorePillsAndOther('analgesia', ANALGS, c.analg||c.analgesia, 'cAnalgOther');
+      restorePillsAndOther('comp', COMPS, c.comp||c.complications, 'cCompOther');
+
+      if (c.postOpPlan) {
+        let basePlan = POSTOP_PLANS.find(p => c.postOpPlan.startsWith(p)) || 'Routine Monitoring';
+        let match = document.querySelector(`input[name="postOpPlan"][value="${basePlan}"]`);
+        if (match) match.checked = true;
+        if (c.postOpPlan.includes('(')) {
+          let extra = c.postOpPlan.split('(')[1].replace(')','').trim();
+          document.getElementById('cPostOpPlanOther').value = extra;
+        }
+      }
+      if (c.painScore) {
+        let pMatch = document.querySelector(`input[name="painScore"][value="${c.painScore}"]`);
+        if (pMatch) pMatch.checked = true;
+      }
+
+      curLinks = c.links || (c.attachmentUrl ? [{url:c.attachmentUrl, thumb:''}] : []);
+      document.getElementById('currFiles').innerHTML = curLinks.length ? `<span style="font-size:0.78rem;color:#059669">${curLinks.length} file(s) attached. <u onclick="curLinks=[];document.getElementById('currFiles').innerHTML='Cleared.'" style="cursor:pointer;color:#dc2626">Clear all</u></span>` : '';
+      checkAirway(); showTab('tabLogger');
+    }
+
+    async function delCase(id) {
+      const ok = await uiConfirm("Are you sure you want to delete this case from your logbook?", "Delete Case");
+      if(ok) {
+        setLS('el_cases',getLS('el_cases').filter(x=>x.id!==id));
+        const info = getCurrentUserPlanInfo();
+        if (info.plan === 'premium' && info.storage_mode === 'gdrive') await pushDatabaseToDrive(true);
+        if (info.plan === 'premium' && info.storage_mode === 'our_db') await syncHostingerDatabase(true);
+        renderLedger();
+        updateHeaderBadge();
+        showToast('Case deleted.');
+      }
+    }
+    
+    async function exportCSV() {
+      let cases = getLS('el_cases'); 
+      if(!cases.length) return uiAlert("No cases to export!");
+
+      const info = getCurrentUserPlanInfo();
+      const stats = getAttachmentStats();
+      if (info.plan === 'premium' && info.storage_mode === 'gdrive' && stats.local > 0 && getScriptUrl()) {
+        const wantSync = await uiConfirm(`You have ${stats.local} attached OT sheet(s) without a Google Drive link.\n\nSync them to Google Drive now before exporting CSV?`, "Sync Before Export");
+        if (wantSync) {
+          await syncPendingUploads(false);
+        }
+      }
+      
+      const csv = buildCSVString();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+      a.download = `Anaesthesiologist_Logbook_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+    
+    init();
+  </script>
+</body>
+</html>
